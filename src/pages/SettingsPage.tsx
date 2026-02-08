@@ -208,7 +208,7 @@ export default function SettingsPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">HairMaster</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400">Verze 1.0.0</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400">Verze {APP_VERSION}</p>
               </div>
             </div>
 
