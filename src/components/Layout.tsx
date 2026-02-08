@@ -98,7 +98,6 @@ export default function Layout() {
                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
                   >
-                    <DotsIcon className="w-4 h-4" />
                     Administrace
                     <ChevronDownIcon className={`w-4 h-4 transition-transform ${showAdminMenu ? 'rotate-180' : ''}`} />
                   </button>
