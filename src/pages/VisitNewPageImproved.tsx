@@ -8,7 +8,8 @@ import {
   createVisit, 
   getVisit,
   getOxidants,
-  getUkony
+  getUkony,
+  createClient
 } from '@/lib/firestore';
 import type {
   Klient,
@@ -75,6 +76,8 @@ export default function VisitNewPageImproved() {
   const [showSummary, setShowSummary] = useState(false);
   const [clientSearch, setClientSearch] = useState('');
   const [productSearches, setProductSearches] = useState<{[key: string]: string}>({});
+  const [showNewClient, setShowNewClient] = useState(false);
+  const [newClientForm, setNewClientForm] = useState({ jmeno: '', prijmeni: '', telefon: '', alergie: '' });
 
   const [form, setForm] = useState<NavstevaForm>({
     klient_id: clientId || null,
@@ -565,26 +568,103 @@ export default function VisitNewPageImproved() {
                 )}
               </div>
             ) : (
-              <div className="relative">
-                <input
-                  placeholder="Hledat klienta..."
-                  value={clientSearch}
-                  onChange={e => setClientSearch(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all dark:bg-gray-900 dark:text-gray-100"
-                  autoFocus
-                />
-                {filteredClients.length > 0 && (
-                  <div className="absolute z-10 mt-2 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-64 overflow-y-auto scrollbar-thin animate-slide-up">
-                    {filteredClients.map(c => (
+              <div>
+                <div className="relative">
+                  <input
+                    placeholder="Hledat klienta..."
+                    value={clientSearch}
+                    onChange={e => setClientSearch(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all dark:bg-gray-900 dark:text-gray-100"
+                    autoFocus
+                  />
+                  {filteredClients.length > 0 && (
+                    <div className="absolute z-10 mt-2 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-64 overflow-y-auto scrollbar-thin animate-slide-up">
+                      {filteredClients.map(c => (
+                        <button
+                          key={c.id}
+                          onClick={() => { setForm(f => ({ ...f, klient_id: c.id })); setClientSearch(''); }}
+                          className="w-full px-4 py-2.5 text-left text-sm hover:bg-accent-50 dark:hover:bg-accent-900/20 transition-colors border-b border-gray-50 dark:border-gray-700 last:border-0"
+                        >
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{c.jmeno} {c.prijmeni}</span>
+                          {c.poznamka && <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500 ml-2 text-xs">• {c.poznamka}</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                {/* New client button and form */}
+                {!showNewClient ? (
+                  <button
+                    onClick={() => setShowNewClient(true)}
+                    className="mt-2 text-sm text-accent-600 dark:text-accent-400 hover:text-accent-700 dark:hover:text-accent-300 font-medium flex items-center gap-1"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Nový klient
+                  </button>
+                ) : (
+                  <div className="mt-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 animate-slide-up">
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Nový klient</h3>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <input
+                        placeholder="Jméno *"
+                        value={newClientForm.jmeno}
+                        onChange={e => setNewClientForm(f => ({ ...f, jmeno: e.target.value }))}
+                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-800 dark:text-gray-100"
+                      />
+                      <input
+                        placeholder="Příjmení *"
+                        value={newClientForm.prijmeni}
+                        onChange={e => setNewClientForm(f => ({ ...f, prijmeni: e.target.value }))}
+                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-800 dark:text-gray-100"
+                      />
+                    </div>
+                    <input
+                      placeholder="Telefon"
+                      value={newClientForm.telefon}
+                      onChange={e => setNewClientForm(f => ({ ...f, telefon: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-800 dark:text-gray-100 mb-3"
+                    />
+                    <textarea
+                      placeholder="Alergie"
+                      value={newClientForm.alergie}
+                      onChange={e => setNewClientForm(f => ({ ...f, alergie: e.target.value }))}
+                      rows={2}
+                      className="w-full px-3 py-2 border border-red-200 dark:border-red-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100 resize-none mb-3"
+                    />
+                    <div className="flex justify-end gap-2">
                       <button
-                        key={c.id}
-                        onClick={() => { setForm(f => ({ ...f, klient_id: c.id })); setClientSearch(''); }}
-                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-accent-50 dark:hover:bg-accent-900/20 transition-colors border-b border-gray-50 dark:border-gray-700 last:border-0"
+                        onClick={() => { setShowNewClient(false); setNewClientForm({ jmeno: '', prijmeni: '', telefon: '', alergie: '' }); }}
+                        className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                       >
-                        <span className="font-medium text-gray-900 dark:text-gray-100">{c.jmeno} {c.prijmeni}</span>
-                        {c.poznamka && <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500 ml-2 text-xs">• {c.poznamka}</span>}
+                        Zrušit
                       </button>
-                    ))}
+                      <button
+                        onClick={async () => {
+                          if (!newClientForm.jmeno.trim() || !newClientForm.prijmeni.trim() || !user) {
+                            toast.error('Jméno a příjmení jsou povinné');
+                            return;
+                          }
+                          try {
+                            const id = await createClient(user.uid, newClientForm);
+                            toast.success('Klient vytvořen');
+                            setForm(f => ({ ...f, klient_id: id }));
+                            setShowNewClient(false);
+                            setNewClientForm({ jmeno: '', prijmeni: '', telefon: '', alergie: '' });
+                            // Reload clients
+                            const data = await getClients(user.uid);
+                            setClients(data as Klient[]);
+                          } catch (err: any) {
+                            toast.error(err.message || 'Chyba při vytváření klienta');
+                          }
+                        }}
+                        className="px-3 py-1.5 text-sm bg-accent-600 text-white rounded-lg hover:bg-accent-700 font-medium"
+                      >
+                        Vytvořit
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
