@@ -1,25 +1,30 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useBreadcrumbs } from '@/lib/breadcrumbs';
 import { useAuth } from '@/lib/auth';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Button from './Button';
 
-const navItems = [
+const primaryNavItems = [
   { to: '/', label: 'Přehled', icon: HomeIcon },
   { to: '/clients', label: 'Klienti', icon: UsersIcon },
   { to: '/sales/new', label: 'Prodeje', icon: CashIcon },
   { to: '/trzby', label: 'Tržby', icon: ChartIcon },
+  { to: '/settings', label: 'Nastavení', icon: SettingsIcon },
+];
+
+const adminNavItems = [
   { to: '/admin/materials', label: 'Materiály', icon: BeakerIcon },
   { to: '/admin/oxidants', label: 'Oxidanty', icon: FlaskIcon },
   { to: '/admin/products', label: 'Produkty', icon: ShoppingBagIcon },
   { to: '/admin/ukony', label: 'Úkony', icon: ListIcon },
-  { to: '/settings', label: 'Nastavení', icon: SettingsIcon },
 ];
 
 export default function Layout() {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [showAdminMenu, setShowAdminMenu] = useState(false);
+  const adminMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -33,6 +38,19 @@ export default function Layout() {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (adminMenuRef.current && !adminMenuRef.current.contains(event.target as Node)) {
+        setShowAdminMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -52,8 +70,8 @@ export default function Layout() {
               <span className="text-xl font-bold text-gray-900 dark:text-gray-100">HairMaster</span>
             </NavLink>
             <div className="flex items-center gap-4 flex-1 min-w-0">
-              <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none flex-1">
-                {navItems.map(({ to, label, icon: Icon }) => (
+              <nav className="flex items-center gap-1 flex-1">
+                {primaryNavItems.map(({ to, label, icon: Icon }) => (
                   <NavLink
                     key={to}
                     to={to}
@@ -70,6 +88,43 @@ export default function Layout() {
                     {label}
                   </NavLink>
                 ))}
+                
+                <div className="relative" ref={adminMenuRef}>
+                  <button
+                    onClick={() => setShowAdminMenu(!showAdminMenu)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                      isAdminRoute
+                        ? 'bg-accent-50 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <DotsIcon className="w-4 h-4" />
+                    Administrace
+                    <ChevronDownIcon className={`w-4 h-4 transition-transform ${showAdminMenu ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {showAdminMenu && (
+                    <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 min-w-[180px] z-50">
+                      {adminNavItems.map(({ to, label, icon: Icon }) => (
+                        <NavLink
+                          key={to}
+                          to={to}
+                          onClick={() => setShowAdminMenu(false)}
+                          className={({ isActive }) =>
+                            `flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                              isActive
+                                ? 'bg-accent-50 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400'
+                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            }`
+                          }
+                        >
+                          <Icon className="w-4 h-4" />
+                          {label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </nav>
               
               {user && (
@@ -264,3 +319,18 @@ function SettingsIcon({ className }: { className?: string }) {
   );
 }
 
+function DotsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+    </svg>
+  );
+}
