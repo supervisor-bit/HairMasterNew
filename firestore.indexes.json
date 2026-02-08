@@ -1,0 +1,65 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "visits",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "klient_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "datum",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "clients",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "aktivni",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "created_at",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "clients",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "aktivni",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "skupina_ids",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "created_at",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "prodeje",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "klient_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "datum",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

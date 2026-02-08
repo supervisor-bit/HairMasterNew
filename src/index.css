@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply min-h-screen bg-gray-50 antialiased;
+  }
+  
+  .dark body {
+    @apply bg-gray-900 text-gray-100;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded hover:bg-gray-400;
+  }
+}
+
+/* Print styles - Clean black & white report */
+@media print {
+  @page {
+    size: A4;
+    margin: 2cm;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Hide ALL web elements */
+  nav, header, footer, button, .print\\:hidden,
+  .bg-gradient-to-r, .bg-gradient-to-br, .shadow, .rounded,
+  .border-gray-100, .border-gray-200, .animate-fade-in, .animate-slide-in {
+    display: none !important;
+  }
+  
+  /* Hide web UI components */
+  .max-w-3xl > *:not(.print\\:block):not(.space-y-4) {
+    display: none !important;
+  }
+  
+  /* Force all colors to black */
+  * {
+    color: black !important;
+    background: white !important;
+    border-color: black !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+  
+  /* Page breaks */
+  .avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* Clean typography */
+  body {
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+  
+  h1 {
+    font-size: 20pt;
+    font-weight: bold;
+    margin-bottom: 10pt;
+    text-transform: uppercase;
+  }
+  
+  h2, h3 {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-top: 10pt;
+    margin-bottom: 6pt;
+  }
+  
+  /* Table-like structure */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15pt;
+  }
+  
+  th, td {
+    border: 1px solid black;
+    padding: 6pt;
+    text-align: left;
+  }
+  
+  th {
+    font-weight: bold;
+    background: white !important;
+  }
+}
+
