@@ -5,6 +5,8 @@ import Card from '@/components/Card';
 import Button from '@/components/Button';
 import toast from 'react-hot-toast';
 
+const APP_VERSION = '2.0.2-LATEST';
+
 export default function SettingsPage() {
   const { user } = useAuth();
   const [darkMode, setDarkMode] = useState(false);
@@ -113,7 +115,9 @@ export default function SettingsPage() {
     <div className="max-w-4xl mx-auto animate-fade-in">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">Nastavení</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1">Konfigurace aplikace a správa dat</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1">
+          Konfigurace aplikace a správa dat · <span className="text-xs opacity-50">v{APP_VERSION}</span>
+        </p>
       </div>
 
       <div className="space-y-6">
