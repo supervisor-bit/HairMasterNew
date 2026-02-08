@@ -25,6 +25,15 @@
   .scrollbar-thin::-webkit-scrollbar-thumb {
     @apply bg-gray-300 rounded hover:bg-gray-400;
   }
+  
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 /* Print styles - Clean black & white report */

@@ -51,15 +51,15 @@ export default function Layout() {
               </div>
               <span className="text-xl font-bold text-gray-900 dark:text-gray-100">HairMaster</span>
             </NavLink>
-            <div className="flex items-center gap-4">
-              <nav className="flex items-center gap-1">
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none flex-1">
                 {navItems.map(({ to, label, icon: Icon }) => (
                   <NavLink
                     key={to}
                     to={to}
                     end={to === '/'}
                     className={({ isActive }) =>
-                      `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                         isActive
                           ? 'bg-accent-50 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400'
                           : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'

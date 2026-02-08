@@ -148,12 +148,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent visits */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">Poslední návštěvy</h2>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/visits')}>
-              Zobrazit vše →
-            </Button>
-          </div>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-4">Poslední návštěvy</h2>
 
           {recentVisits.length === 0 ? (
             <Card padding="lg" className="text-center">
