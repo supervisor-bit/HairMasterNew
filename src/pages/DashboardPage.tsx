@@ -9,6 +9,8 @@ import Card from '@/components/Card';
 import Avatar from '@/components/Avatar';
 import Badge from '@/components/Badge';
 
+const APP_VERSION = '2.0.1-NEW';
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -88,7 +90,9 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">Přehled</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1">Rychlý přístup k nedávné práci</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1">
+            Rychlý přístup k nedávné práci · <span className="text-xs opacity-50">v{APP_VERSION}</span>
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => navigate('/clients/new')}>
