@@ -11,6 +11,8 @@ export default function SettingsPage() {
   const { user } = useAuth();
   const [darkMode, setDarkMode] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     const savedMode = localStorage.getItem('darkMode') === 'true';
@@ -80,6 +82,23 @@ export default function SettingsPage() {
     } finally {
       setExporting(false);
     }
+  };
+
+  const handleLogoClick = () => {
+    const newCount = clickCount + 1;
+    setClickCount(newCount);
+    
+    if (newCount === 5) {
+      setShowConfetti(true);
+      toast.success('🎉 Easter egg nalezen!', { duration: 3000 });
+      setTimeout(() => {
+        setShowConfetti(false);
+        setClickCount(0);
+      }, 3000);
+    }
+    
+    // Reset po 2 sekundách nečinnosti
+    setTimeout(() => setClickCount(0), 2000);
   };
 
   const handleImportData = () => {
@@ -197,11 +216,15 @@ export default function SettingsPage() {
         </Card>
 
         {/* About */}
-        <Card>
+        <Card className="relative overflow-hidden">
+          {showConfetti && <Confetti />}
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-4">O aplikaci</h2>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center">
+              <div 
+                onClick={handleLogoClick}
+                className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-transform active:scale-95"
+              >
                 <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -260,6 +283,49 @@ export default function SettingsPage() {
           </div>
         </Card>
       </div>
+    </div>
+  );
+}
+
+function Confetti() {
+  const particles = Array.from({ length: 50 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    delay: Math.random() * 0.5,
+    duration: 2 + Math.random(),
+    color: ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b'][Math.floor(Math.random() * 5)],
+  }));
+
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="absolute w-2 h-2 rounded-full animate-confetti"
+          style={{
+            left: `${p.left}%`,
+            top: '-10px',
+            backgroundColor: p.color,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.duration}s`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes confetti {
+          0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+          }
+        }
+        .animate-confetti {
+          animation: confetti linear forwards;
+        }
+      `}</style>
     </div>
   );
 }
