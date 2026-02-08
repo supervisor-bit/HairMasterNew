@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vyčištění cache...</title>
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 { margin: 0 0 1rem; font-size: 2rem; }
+    p { margin: 0; opacity: 0.9; }
+    .spinner {
+      margin: 2rem auto;
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+  <script>
+    console.log('Clearing cache and service workers...');
+    
+    // Unregister all service workers
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        console.log('Found', registrations.length, 'service workers');
+        for(let registration of registrations) {
+          registration.unregister();
+          console.log('Unregistered SW');
+        }
+      });
+    }
+    
+    // Clear all caches
+    if ('caches' in window) {
+      caches.keys().then(function(names) {
+        console.log('Found', names.length, 'caches:', names);
+        for (let name of names) {
+          caches.delete(name);
+          console.log('Deleted cache:', name);
+        }
+      });
+    }
+    
+    // Clear localStorage
+    try {
+      localStorage.clear();
+      console.log('Cleared localStorage');
+    } catch(e) {
+      console.error('Could not clear localStorage', e);
+    }
+    
+    // Redirect to app with cache buster
+    setTimeout(function() {
+      var timestamp = new Date().getTime();
+      console.log('Redirecting to /?t=' + timestamp);
+      window.location.href = '/?t=' + timestamp;
+    }, 2000);
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>🔄 Aktualizace aplikace</h1>
+    <div class="spinner"></div>
+    <p>Vyčišťuji cache a načítám novou verzi...</p>
+  </div>
+</body>
+</html>
