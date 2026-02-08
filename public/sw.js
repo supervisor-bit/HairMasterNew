@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hairmaster-v3';
+const CACHE_NAME = 'hairmaster-v4';
 const urlsToCache = [
   '/',
   '/index.html',

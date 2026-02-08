@@ -5,7 +5,7 @@ import Card from '@/components/Card';
 import Button from '@/components/Button';
 import toast from 'react-hot-toast';
 
-const APP_VERSION = '2.0.2-LATEST';
+const APP_VERSION = '2.0.3';
 
 export default function SettingsPage() {
   const { user } = useAuth();
