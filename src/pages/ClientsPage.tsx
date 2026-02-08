@@ -96,11 +96,11 @@ export default function ClientsPage() {
       return;
     }
     try {
-      const id = await createClient(user.uid, newForm);
+      await createClient(user.uid, newForm);
       toast.success('Klient vytvořen');
       setShowNew(false);
       setNewForm({ jmeno: '', prijmeni: '', telefon: '', poznamka: '', alergie: '' });
-      navigate(`/clients/${id}`);
+      load(); // Reload the list instead of navigating
     } catch (err: any) {
       toast.error(err.message || 'Chyba při vytváření klienta');
     }
