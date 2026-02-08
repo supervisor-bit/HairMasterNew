@@ -400,7 +400,7 @@ export default function VisitNewPageImproved() {
     }
   };
 
-  const filteredClients = clientSearch.trim() && clientSearch.length >= 3
+  const filteredClients = clientSearch.trim()
     ? clients.filter(c =>
         `${c.jmeno} ${c.prijmeni}`.toLowerCase().includes(clientSearch.toLowerCase())
       )
@@ -567,7 +567,7 @@ export default function VisitNewPageImproved() {
             ) : (
               <div className="relative">
                 <input
-                  placeholder="Hledat klienta (min 3 znaky)..."
+                  placeholder="Hledat klienta..."
                   value={clientSearch}
                   onChange={e => setClientSearch(e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all dark:bg-gray-900 dark:text-gray-100"
