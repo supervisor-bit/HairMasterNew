@@ -11,6 +11,8 @@ Moderní webová aplikace pro správu kadeřnického salonu. Sledování klient�
 - Historie návštěv u každého klienta
 - Poznámky, alergie a preference
 - Skupiny klientů (VIP, stálí zákazníci, atd.)
+- **Nové**: Inline editace - rychlé vytvoření klienta bez přechodu na detail
+- **Nové**: Vyhledávání od prvního znaku (bez nutnosti minimální délky)
 
 ### 📅 Návštěvy
 - Detailní záznamy návštěv s recepturami
@@ -18,6 +20,7 @@ Moderní webová aplikace pro správu kadeřnického salonu. Sledování klient�
 - Kalkulace gramáží podle míchacích poměrů
 - Automatický výpočet cen
 - Možnost opakování předchozích návštěv
+- **Nové**: Rychlé vytvoření nového klienta přímo z formuláře návštěvy
 
 ### 🎨 Materiály a receptury
 - Katalog barev a materiálů s odstíny
@@ -50,6 +53,13 @@ Moderní webová aplikace pro správu kadeřnického salonu. Sledování klient�
 - Export celé databáze do JSON
 - Import ze zálohy
 - Bezpečné uchování dat
+
+### 🎯 Uživatelské rozhraní
+- **Responsivní design** - funguje na mobilu, tabletu i desktopu
+- **Dropdown menu Administrace** - úspora místa v navigaci
+- **Breadcrumbs navigace** - snadná orientace v aplikaci
+- **Verze aplikace** - zobrazená na dashboardu a v nastavení
+- **Easter egg** - 5x kliknutí na logo v nastavení = konfety 🎉
 
 ## 🛠️ Technologie
 
@@ -200,5 +210,18 @@ Pull requesty jsou vítány! Pro větší změny prosím nejdříve otevřete is
 
 ---
 
-**Verze**: 1.0.0  
-**Poslední update**: Únor 2026
+**Verze**: 2.0.4  
+**Poslední update**: 8. února 2026
+
+## 🆕 Changelog
+
+### v2.0.4 (8. února 2026)
+- ✨ Easter egg: Konfety při 5x kliknutí na logo v nastavení
+- 🎨 Dropdown menu "Administrace" pro úsporu místa v navigaci
+- 🐛 Fix: Sjednocená šířka stránky Úkony s ostatními admin sekcemi
+- 🐛 Fix: Správný label "Úkony" v breadcrumbs
+- ✨ Možnost vytvořit nového klienta přímo z formuláře Nové návštěvy
+- ✨ Vyhledávání klientů od prvního znaku (odstraněn 3-znakový minimum)
+- ✨ Tlačítko "Nový klient" otevře inline formulář místo navigace
+- 📊 Zobrazení verze aplikace v dashboardu a nastavení
+- 🔧 Service Worker s verzováním cache pro lepší aktualizace
