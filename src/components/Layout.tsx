@@ -193,6 +193,7 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
     products: 'Produkty',
     sales: 'Prodeje',
     new: 'Nový',
+    ukony: 'Úkony',
   };
 
   const nonLinkable = new Set(['admin', 'sales']);
