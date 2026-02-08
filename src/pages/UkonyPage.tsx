@@ -129,7 +129,7 @@ export default function UkonyPage() {
   const activeUkony = ukony.filter(u => showInactive || u.aktivni);
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Úkony</h1>
         <div className="flex gap-2">
