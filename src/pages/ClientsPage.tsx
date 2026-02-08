@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { getClients, getClient, createClient, getSkupiny, createSkupina, updateClient } from '@/lib/firestore';
 import type { Klient, Skupina } from '@/lib/types';
@@ -14,13 +14,14 @@ import Badge from '@/components/Badge';
 
 export default function ClientsPage() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [clients, setClients] = useState<Klient[]>([]);
   const [skupiny, setSkupiny] = useState<Skupina[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedSkupina, setSelectedSkupina] = useState<string | null>(null);
   const [showInactive, setShowInactive] = useState(false);
-  const [showNew, setShowNew] = useState(false);
+  const [showNew, setShowNew] = useState(searchParams.get('new') === 'true');
   const [showNewSkupina, setShowNewSkupina] = useState(false);
   const [newForm, setNewForm] = useState({ jmeno: '', prijmeni: '', telefon: '', poznamka: '', alergie: '' });
   const [newSkupinaForm, setNewSkupinaForm] = useState({ nazev: '', barva: '#3b82f6' });
@@ -51,6 +52,16 @@ export default function ClientsPage() {
   useEffect(() => {
     loadSkupiny();
   }, [loadSkupiny]);
+
+  // Check URL params for opening new client form
+  useEffect(() => {
+    if (searchParams.get('new') === 'true') {
+      setShowNew(true);
+      // Remove param from URL after opening
+      searchParams.delete('new');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     const timer = setTimeout(() => load(), search ? 300 : 0);
