@@ -132,6 +132,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
+      {showConfetti && <Confetti />}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">Nastavení</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1">
@@ -216,8 +217,7 @@ export default function SettingsPage() {
         </Card>
 
         {/* About */}
-        <Card className="relative overflow-hidden">
-          {showConfetti && <Confetti />}
+        <Card>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-4">O aplikaci</h2>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -297,7 +297,7 @@ function Confetti() {
   }));
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-50">
       {particles.map((p) => (
         <div
           key={p.id}
