@@ -95,7 +95,7 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => navigate('/clients/new')}>
+          <Button variant="secondary" onClick={() => navigate('/clients')}>
             + Nový klient
           </Button>
           <Button onClick={() => navigate('/visits/new')}>
