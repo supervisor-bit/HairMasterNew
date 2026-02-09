@@ -12,6 +12,7 @@ const VisitNewPage = lazy(() => import('./pages/VisitNewPageImproved'));
 const VisitDetailPage = lazy(() => import('./pages/VisitDetailPage'));
 const ProductSalePage = lazy(() => import('./pages/ProductSalePage'));
 const TrzbyPage = lazy(() => import('./pages/TrzbyPage'));
+const StatisticsPage = lazy(() => import('./pages/StatisticsPage'));
 const MaterialsPage = lazy(() => import('./pages/MaterialsPage'));
 const OxidantsPage = lazy(() => import('./pages/OxidantsPage'));
 const ProductsPage = lazy(() => import('./pages/ProductsPage'));
@@ -61,6 +62,7 @@ export default function App() {
           <Route path="/sales" element={<Navigate to="/sales/new" replace />} />
           <Route path="/sales/new" element={<ProductSalePage />} />
           <Route path="/trzby" element={<TrzbyPage />} />
+          <Route path="/statistics" element={<StatisticsPage />} />
           <Route path="/admin" element={<Navigate to="/admin/materials" replace />} />
           <Route path="/admin/materials" element={<MaterialsPage />} />
           <Route path="/admin/oxidants" element={<OxidantsPage />} />

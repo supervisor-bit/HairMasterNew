@@ -171,6 +171,16 @@ export default function CommandPalette() {
         },
       },
       {
+        id: 'nav-statistics',
+        label: 'Statistiky',
+        icon: BeakerIcon,
+        category: 'navigace',
+        action: () => {
+          setIsOpen(false);
+          navigate('/statistics');
+        },
+      },
+      {
         id: 'nav-settings',
         label: 'Nastavení',
         icon: SettingsIcon,

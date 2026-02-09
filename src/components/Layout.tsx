@@ -10,6 +10,7 @@ const primaryNavItems = [
   { to: '/clients', label: 'Klienti', icon: UsersIcon },
   { to: '/sales/new', label: 'Prodeje', icon: CashIcon },
   { to: '/trzby', label: 'Tržby', icon: ChartIcon },
+  { to: '/statistics', label: 'Statistiky', icon: BeakerIcon },
   { to: '/settings', label: 'Nastavení', icon: SettingsIcon },
 ];
 
