@@ -1194,15 +1194,19 @@ function MaterialRow({
           <button
             key={m.id}
             onClick={() => {
+              console.log('Material clicked:', m.nazev, 'michaci_pomery:', m.michaci_pomery);
               const update: Partial<MaterialVMisceForm> = { material_id: m.id };
-              // If material has multiple mixing ratios, set the first one as default
+              // If material has multiple mixing ratios, set the LAST one as default (newest)
               if (m.michaci_pomery && m.michaci_pomery.length > 0) {
-                update.material_michaci_pomer_material = m.michaci_pomery[0].material;
-                update.material_michaci_pomer_oxidant = m.michaci_pomery[0].oxidant;
+                const lastRatio = m.michaci_pomery[m.michaci_pomery.length - 1];
+                update.material_michaci_pomer_material = lastRatio.material;
+                update.material_michaci_pomer_oxidant = lastRatio.oxidant;
+                console.log('Using last ratio from array:', lastRatio);
               } else {
                 // Otherwise use the single default ratio
                 update.material_michaci_pomer_material = m.michaci_pomer_material || 1;
                 update.material_michaci_pomer_oxidant = m.michaci_pomer_oxidant || 1;
+                console.log('Using default ratio:', m.michaci_pomer_material, ':', m.michaci_pomer_oxidant);
               }
               onChange(update);
               setTimeout(() => odstinRef.current?.focus(), 50);
