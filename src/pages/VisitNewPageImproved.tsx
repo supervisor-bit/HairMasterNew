@@ -567,9 +567,9 @@ export default function VisitNewPageImproved() {
       </h1>
 
       {/* Two column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* LEFT COLUMN - Editor */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6">
 
       {/* Client selection */}
       <Card className="mb-6 animate-fade-in">
@@ -1242,9 +1242,9 @@ export default function VisitNewPageImproved() {
                 </div>
               </div>
 
-              {/* Services summary */}
+              {/* Services detail */}
               {form.sluzby.length > 0 && (
-                <div className="space-y-3 mb-4">
+                <div className="space-y-4 mb-4">
                   {form.sluzby.map((sluzba, sIdx) => {
                     const totalMaterialGrams = sluzba.misky.reduce((sum, miska) => 
                       sum + miska.materialy.reduce((matSum, mat) => {
@@ -1254,19 +1254,82 @@ export default function VisitNewPageImproved() {
                     const totalOxidantGrams = sluzba.misky.reduce((sum, m) => sum + (m.gramy_oxidantu || 0), 0);
                     
                     return (
-                      <div key={sluzba.tempId} className="p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
+                      <div key={sluzba.tempId} className="p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg border border-purple-200 dark:border-purple-700">
+                        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-purple-200 dark:border-purple-700">
                           <Badge variant="service" className="text-xs">{sIdx + 1}</Badge>
-                          <div className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
+                          <div className="font-semibold text-sm text-gray-900 dark:text-gray-100">
                             {sluzba.nazev || 'Bez názvu'}
                           </div>
                         </div>
-                        {sluzba.misky.length > 0 && (
-                          <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                            <div>🎨 Misek: {sluzba.misky.length}</div>
-                            <div>📦 Celkem: {totalMaterialGrams + totalOxidantGrams}g</div>
-                            {totalMaterialGrams > 0 && <div className="text-purple-600 dark:text-purple-400">→ {totalMaterialGrams}g mat. + {totalOxidantGrams}g ox.</div>}
+                        
+                        {/* Misky detail */}
+                        {sluzba.misky.length > 0 ? (
+                          <div className="space-y-3">
+                            {sluzba.misky.map((miska, mIdx) => {
+                              const miskaMatGrams = miska.materialy.reduce((sum, mat) => {
+                                const g = typeof mat.gramy_materialu === 'string' ? parseFloat(mat.gramy_materialu) : mat.gramy_materialu;
+                                return sum + (isNaN(g) ? 0 : g);
+                              }, 0);
+                              const oxidant = oxidants.find(ox => ox.id === miska.oxidant_id);
+                              
+                              return (
+                                <div key={miska.tempId} className="pl-3 border-l-2 border-purple-300 dark:border-purple-600">
+                                  <div className="text-xs font-semibold text-purple-700 dark:text-purple-300 mb-1.5">
+                                    Miska {mIdx + 1}
+                                  </div>
+                                  
+                                  {/* Materials */}
+                                  {miska.materialy.length > 0 && (
+                                    <div className="space-y-1 mb-2">
+                                      {miska.materialy.map((mat, matIdx) => {
+                                        const material = mat.material_id ? materialMap.get(mat.material_id) : null;
+                                        const g = typeof mat.gramy_materialu === 'string' ? parseFloat(mat.gramy_materialu) : mat.gramy_materialu;
+                                        if (!material) return null;
+                                        
+                                        return (
+                                          <div key={mat.tempId} className="text-xs text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                            <span className="font-medium">{material.nazev}</span>
+                                            {mat.odstin_cislo && (
+                                              <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-[10px] font-semibold">
+                                                {mat.odstin_cislo}
+                                              </span>
+                                            )}
+                                            <span className="ml-auto font-semibold text-purple-600 dark:text-purple-400">{g || 0}g</span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                  
+                                  {/* Oxidant */}
+                                  {oxidant && miska.gramy_oxidantu > 0 && (
+                                    <div className="text-xs text-amber-700 dark:text-amber-300 flex items-center gap-2 pt-1.5 border-t border-purple-200 dark:border-purple-700">
+                                      <span className="font-medium">🧪 {oxidant.nazev}</span>
+                                      <span className="ml-auto font-semibold">{miska.gramy_oxidantu}g</span>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Miska total */}
+                                  {(miskaMatGrams > 0 || miska.gramy_oxidantu > 0) && (
+                                    <div className="text-xs font-bold text-green-700 dark:text-green-400 flex items-center gap-2 mt-1.5 pt-1.5 border-t border-purple-200 dark:border-purple-700">
+                                      <span>= Celkem</span>
+                                      <span className="ml-auto">{miskaMatGrams + (miska.gramy_oxidantu || 0)}g</span>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                            
+                            {/* Service total */}
+                            {(totalMaterialGrams > 0 || totalOxidantGrams > 0) && (
+                              <div className="pt-2 border-t border-purple-300 dark:border-purple-600 text-xs font-bold text-purple-900 dark:text-purple-100 flex items-center justify-between">
+                                <span>📦 Celková spotřeba:</span>
+                                <span>{totalMaterialGrams + totalOxidantGrams}g</span>
+                              </div>
+                            )}
                           </div>
+                        ) : (
+                          <div className="text-xs text-gray-500 dark:text-gray-400 italic">Služba bez materiálu</div>
                         )}
                       </div>
                     );
