@@ -70,7 +70,6 @@ export default function DashboardPage() {
 
       // Chart data - last 6 months
       const monthsData: MonthData[] = [];
-      const now = new Date();
       for (let i = 5; i >= 0; i--) {
         const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
