@@ -233,8 +233,12 @@ export default function VisitNewPageImproved() {
       const grams = typeof mat.gramy_materialu === 'string' ? parseFloat(mat.gramy_materialu) : mat.gramy_materialu;
       if (isNaN(grams) || grams <= 0) continue;
       
+      // Use the selected ratio from the form, or fall back to material's default ratio
+      const ratioMaterial = mat.material_michaci_pomer_material || material.michaci_pomer_material || 1;
+      const ratioOxidant = mat.material_michaci_pomer_oxidant || material.michaci_pomer_oxidant || 1;
+      
       totalMaterialGrams += grams;
-      totalOxidantNeeded += (grams * material.michaci_pomer_oxidant / material.michaci_pomer_material);
+      totalOxidantNeeded += (grams * ratioOxidant / ratioMaterial);
     }
     
     return totalMaterialGrams > 0 ? Math.round(totalOxidantNeeded * 10) / 10 : 0;
@@ -372,8 +376,8 @@ export default function VisitNewPageImproved() {
                 return {
                   material_id: mat.material_id,
                   material_nazev: material?.nazev || '',
-                  material_michaci_pomer_material: material?.michaci_pomer_material || 1,
-                  material_michaci_pomer_oxidant: material?.michaci_pomer_oxidant || 1,
+                  material_michaci_pomer_material: mat.material_michaci_pomer_material || material?.michaci_pomer_material || 1,
+                  material_michaci_pomer_oxidant: mat.material_michaci_pomer_oxidant || material?.michaci_pomer_oxidant || 1,
                   odstin_cislo: mat.odstin_cislo,
                   gramy_materialu: typeof mat.gramy_materialu === 'string' ? parseFloat(mat.gramy_materialu) : mat.gramy_materialu,
                 };
@@ -444,6 +448,8 @@ export default function VisitNewPageImproved() {
                     {miska.materialy.map(mat => {
                       const material = mat.material_id ? materialMap.get(mat.material_id) : null;
                       if (!material) return null;
+                      const ratioMaterial = mat.material_michaci_pomer_material || material.michaci_pomer_material || 1;
+                      const ratioOxidant = mat.material_michaci_pomer_oxidant || material.michaci_pomer_oxidant || 1;
                       return (
                         <div key={mat.tempId} className="flex items-center gap-2 text-sm flex-wrap">
                           <Badge variant="material">{material.nazev}</Badge>
@@ -452,7 +458,7 @@ export default function VisitNewPageImproved() {
                           )}
                           <span className="text-gray-600 dark:text-gray-400 dark:text-gray-500">{mat.gramy_materialu}g</span>
                           <span className="text-xs text-gray-400 dark:text-gray-500">
-                            ({material.michaci_pomer_material}:{material.michaci_pomer_oxidant})
+                            ({ratioMaterial}:{ratioOxidant})
                           </span>
                         </div>
                       );
@@ -1184,7 +1190,17 @@ function MaterialRow({
           <button
             key={m.id}
             onClick={() => {
-              onChange({ material_id: m.id });
+              const update: Partial<MaterialVMisceForm> = { material_id: m.id };
+              // If material has multiple mixing ratios, set the first one as default
+              if (m.michaci_pomery && m.michaci_pomery.length > 0) {
+                update.material_michaci_pomer_material = m.michaci_pomery[0].material;
+                update.material_michaci_pomer_oxidant = m.michaci_pomery[0].oxidant;
+              } else {
+                // Otherwise use the single default ratio
+                update.material_michaci_pomer_material = m.michaci_pomer_material || 1;
+                update.material_michaci_pomer_oxidant = m.michaci_pomer_oxidant || 1;
+              }
+              onChange(update);
               setTimeout(() => odstinRef.current?.focus(), 50);
             }}
             className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
@@ -1199,47 +1215,75 @@ function MaterialRow({
       </div>
 
       {selectedMaterial && (
-        <div className="flex items-center gap-2">
-          {/* Shade/number input */}
-          <input
-            ref={odstinRef}
-            placeholder={selectedMaterial.typ_zadavani === 'odstin' ? 'Odstín' : 'Číslo'}
-            value={mat.odstin_cislo}
-            onChange={e => onChange({ odstin_cislo: e.target.value })}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                gramyRef.current?.focus();
-              }
-            }}
-            className="w-24 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-900 dark:text-gray-100"
-          />
-          
-          {/* Grams input */}
-          <input
-            ref={gramyRef}
-            type="number"
-            min={1}
-            placeholder="g"
-            value={mat.gramy_materialu}
-            onChange={e => onChange({ gramy_materialu: e.target.value })}
-            className="w-20 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-right focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-900 dark:text-gray-100"
-          />
-          <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 font-medium">g</span>
-          
-          {/* Remove button */}
-          {onRemove && (
-            <button
-              onClick={onRemove}
-              className="ml-auto p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors opacity-0 group-hover:opacity-100"
-              title="Smazat"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+        <>
+          {/* Mixing ratio selection - only for materials with multiple ratios */}
+          {selectedMaterial.michaci_pomery && selectedMaterial.michaci_pomery.length > 0 && (
+            <div className="mb-2">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Míchací poměr:</div>
+              <div className="flex flex-wrap gap-1.5">
+                {selectedMaterial.michaci_pomery.map((pomer, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => onChange({ 
+                      material_michaci_pomer_material: pomer.material,
+                      material_michaci_pomer_oxidant: pomer.oxidant
+                    })}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      mat.material_michaci_pomer_material === pomer.material && 
+                      mat.material_michaci_pomer_oxidant === pomer.oxidant
+                        ? 'bg-blue-600 dark:bg-blue-700 text-white shadow-sm'
+                        : 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-600 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-500'
+                    }`}
+                  >
+                    {pomer.material}:{pomer.oxidant}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
-        </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Shade/number input */}
+            <input
+              ref={odstinRef}
+              placeholder={selectedMaterial.typ_zadavani === 'odstin' ? 'Odstín' : 'Číslo'}
+              value={mat.odstin_cislo}
+              onChange={e => onChange({ odstin_cislo: e.target.value })}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  gramyRef.current?.focus();
+                }
+              }}
+              className="w-24 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-900 dark:text-gray-100"
+            />
+            
+            {/* Grams input */}
+            <input
+              ref={gramyRef}
+              type="number"
+              min={1}
+              placeholder="g"
+              value={mat.gramy_materialu}
+              onChange={e => onChange({ gramy_materialu: e.target.value })}
+              className="w-20 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-right focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-900 dark:text-gray-100"
+            />
+            <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 font-medium">g</span>
+            
+            {/* Remove button */}
+            {onRemove && (
+              <button
+                onClick={onRemove}
+                className="ml-auto p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors opacity-0 group-hover:opacity-100"
+                title="Smazat"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

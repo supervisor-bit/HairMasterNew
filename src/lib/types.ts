@@ -57,18 +57,26 @@ export interface MaterialVMisce {
   material_id: string;
   odstin_cislo: string;
   gramy_materialu: number;
+  michaci_pomer_material?: number;  // použitý poměr pro tuto misku
+  michaci_pomer_oxidant?: number;   // použitý poměr pro tuto misku
   material_nazev?: string;
   material_typ_zadavani?: string;
   material_michaci_pomer_material?: number;
   material_michaci_pomer_oxidant?: number;
 }
 
+export interface MichaciPomer {
+  material: number;
+  oxidant: number;
+}
+
 export interface Material {
   id: string;
   nazev: string;
   typ_zadavani: 'odstin' | 'cislo';
-  michaci_pomer_material: number;
-  michaci_pomer_oxidant: number;
+  michaci_pomer_material: number;      // výchozí poměr
+  michaci_pomer_oxidant: number;       // výchozí poměr
+  michaci_pomery?: MichaciPomer[];     // volitelné: více možných poměrů
   aktivni: boolean;
   poradi: number;
   oxidanty?: Oxidant[];
@@ -132,6 +140,8 @@ export interface MaterialVMisceForm {
   material_id: string | null;
   odstin_cislo: string;
   gramy_materialu: number | string;
+  material_michaci_pomer_material?: number;
+  material_michaci_pomer_oxidant?: number;
 }
 
 export interface MiskaForm {

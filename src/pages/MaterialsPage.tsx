@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/lib/auth';
 import { getMaterials, createMaterial, updateMaterial, deleteMaterial, getOxidants } from '@/lib/firestore';
-import type { Material, Oxidant } from '@/lib/types';
+import type { Material, Oxidant, MichaciPomer } from '@/lib/types';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
@@ -10,6 +10,7 @@ interface MaterialForm {
   typ_zadavani: 'odstin' | 'cislo';
   michaci_pomer_material: number;
   michaci_pomer_oxidant: number;
+  michaci_pomery: MichaciPomer[];
   oxidant_ids: string[];
 }
 
@@ -18,6 +19,7 @@ const emptyForm: MaterialForm = {
   typ_zadavani: 'odstin',
   michaci_pomer_material: 1,
   michaci_pomer_oxidant: 1,
+  michaci_pomery: [],
   oxidant_ids: [],
 };
 
@@ -174,7 +176,66 @@ export default function MaterialsPage() {
             className="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-accent-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
           />
         </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Výchozí poměr pro tento materiál</p>
       </div>
+      
+      {form.typ_zadavani === 'cislo' && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Další možné poměry (pro materiály jako Blond Studio)
+          </label>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {form.michaci_pomery.map((pomer, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setForm(f => ({ ...f, michaci_pomery: f.michaci_pomery.filter((_, i) => i !== idx) }))}
+                className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-lg text-sm font-medium hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center gap-2"
+              >
+                {pomer.material}:{pomer.oxidant}
+                <span className="text-blue-600 dark:text-blue-400">×</span>
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={0.1}
+              step={0.1}
+              placeholder="1"
+              id="new-pomer-mat"
+              className="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-accent-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+            />
+            <span className="text-gray-500 dark:text-gray-400">:</span>
+            <input
+              type="number"
+              min={0.1}
+              step={0.1}
+              placeholder="2"
+              id="new-pomer-ox"
+              className="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-accent-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const matInput = document.getElementById('new-pomer-mat') as HTMLInputElement;
+                const oxInput = document.getElementById('new-pomer-ox') as HTMLInputElement;
+                const mat = parseFloat(matInput.value);
+                const ox = parseFloat(oxInput.value);
+                if (mat > 0 && ox > 0) {
+                  setForm(f => ({ ...f, michaci_pomery: [...f.michaci_pomery, { material: mat, oxidant: ox }] }));
+                  matInput.value = '';
+                  oxInput.value = '';
+                }
+              }}
+              className="px-4 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 text-sm font-medium"
+            >
+              + Přidat poměr
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Např. Blond Studio může mít 1:1, 1:1.5, 1:2</p>
+        </div>
+      )}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Oxidanty</label>
         <div className="flex flex-wrap gap-2">
@@ -295,6 +356,7 @@ export default function MaterialsPage() {
                       typ_zadavani: mat.typ_zadavani,
                       michaci_pomer_material: mat.michaci_pomer_material,
                       michaci_pomer_oxidant: mat.michaci_pomer_oxidant,
+                      michaci_pomery: mat.michaci_pomery || [],
                       oxidant_ids: mat.oxidanty?.map(o => o.id) || [],
                     });
                   }}

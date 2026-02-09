@@ -9,7 +9,7 @@ import Card from '@/components/Card';
 import Avatar from '@/components/Avatar';
 import Badge from '@/components/Badge';
 
-const APP_VERSION = '2.0.4';
+const APP_VERSION = '2.0.5';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
