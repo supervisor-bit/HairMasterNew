@@ -567,36 +567,39 @@ export default function VisitNewPageImproved() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-        {isCopy ? 'Nová návštěva (kopie receptury)' : 'Nová návštěva'}
-      </h1>
-
-      {/* Keyboard shortcuts panel - sticky */}
-      <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-700 rounded-lg px-4 py-2 mb-6 shadow-sm">
-        <div className="flex items-center gap-6 text-xs text-gray-600 dark:text-gray-400 flex-wrap">
-          <div className="flex items-center gap-1.5">
-            <kbd className="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">Ctrl+S</kbd>
-            <span>Souhrn</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <kbd className="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">Ctrl+N</kbd>
-            <span>Nová služba</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <kbd className="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">Enter</kbd>
-            <span>Další materiál (v gramech)</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <kbd className="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">↑↓</kbd>
-            <span>Navigace v autocomplete</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <kbd className="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">Esc</kbd>
-            <span>Zavřít</span>
+    <>
+      {/* Keyboard shortcuts panel - sticky at top of viewport */}
+      <div className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-blue-200 dark:border-blue-700 shadow-sm mb-6">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <div className="flex items-center gap-6 text-xs text-gray-600 dark:text-gray-400 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <kbd className="px-2 py-0.5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/50 dark:to-purple-900/50 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">Ctrl+S</kbd>
+              <span>Souhrn</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <kbd className="px-2 py-0.5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/50 dark:to-purple-900/50 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">Ctrl+N</kbd>
+              <span>Nová služba</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <kbd className="px-2 py-0.5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/50 dark:to-purple-900/50 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">Enter</kbd>
+              <span>Další materiál (v gramech)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <kbd className="px-2 py-0.5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/50 dark:to-purple-900/50 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">↑↓</kbd>
+              <span>Navigace v autocomplete</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <kbd className="px-2 py-0.5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/50 dark:to-purple-900/50 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">Esc</kbd>
+              <span>Zavřít</span>
+            </div>
           </div>
         </div>
       </div>
+
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+          {isCopy ? 'Nová návštěva (kopie receptury)' : 'Nová návštěva'}
+        </h1>
 
       {/* Two column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1399,6 +1402,7 @@ export default function VisitNewPageImproved() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
