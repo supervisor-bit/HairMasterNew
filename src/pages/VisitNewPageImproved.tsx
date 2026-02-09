@@ -1216,12 +1216,30 @@ function MaterialRow({
 
       {selectedMaterial && (
         <>
-          {/* Mixing ratio selection - only for materials with multiple ratios */}
-          {selectedMaterial.michaci_pomery && selectedMaterial.michaci_pomery.length > 0 && (
+          {/* Mixing ratio selection - show default ratio + additional ratios */}
+          {(selectedMaterial.michaci_pomery && selectedMaterial.michaci_pomery.length > 0) || selectedMaterial.michaci_pomer_material ? (
             <div className="mb-2">
               <div className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Míchací poměr:</div>
               <div className="flex flex-wrap gap-1.5">
-                {selectedMaterial.michaci_pomery.map((pomer, idx) => (
+                {/* Default ratio button */}
+                {selectedMaterial.michaci_pomer_material && (
+                  <button
+                    onClick={() => onChange({ 
+                      material_michaci_pomer_material: selectedMaterial.michaci_pomer_material,
+                      material_michaci_pomer_oxidant: selectedMaterial.michaci_pomer_oxidant
+                    })}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      mat.material_michaci_pomer_material === selectedMaterial.michaci_pomer_material && 
+                      mat.material_michaci_pomer_oxidant === selectedMaterial.michaci_pomer_oxidant
+                        ? 'bg-blue-600 dark:bg-blue-700 text-white shadow-sm'
+                        : 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-600 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-500'
+                    }`}
+                  >
+                    {selectedMaterial.michaci_pomer_material}:{selectedMaterial.michaci_pomer_oxidant}
+                  </button>
+                )}
+                {/* Additional ratios */}
+                {selectedMaterial.michaci_pomery?.map((pomer, idx) => (
                   <button
                     key={idx}
                     onClick={() => onChange({ 
@@ -1240,7 +1258,7 @@ function MaterialRow({
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
           
           <div className="flex items-center gap-2">
             {/* Shade/number input */}
