@@ -94,7 +94,7 @@ export function LoginPage() {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-800">
         <div className="w-full max-w-md">
           {/* Logo pro mobil */}
           <div className="lg:hidden text-center mb-8">
@@ -115,7 +115,7 @@ export function LoginPage() {
             <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {isRegistering ? 'Vytvořit účet' : 'Vítejte zpět'}
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500">
+            <p className="text-gray-600 dark:text-gray-400">
               {isRegistering 
                 ? 'Vytvořte si účet pro přístup do aplikace' 
                 : 'Přihlaste se do svého účtu'}
@@ -166,7 +166,7 @@ export function LoginPage() {
           </div>
 
           {/* Footer */}
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-8">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-8">
             © 2026 HairMaster · Salon management systém
           </p>
         </div>
