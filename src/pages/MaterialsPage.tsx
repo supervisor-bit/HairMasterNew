@@ -223,7 +223,7 @@ export default function MaterialsPage() {
                 const mat = parseFloat(matInput.value);
                 const ox = parseFloat(oxInput.value);
                 if (mat > 0 && ox > 0) {
-                  setForm(f => ({ ...f, michaci_pomery: [...f.michaci_pomery, { material: mat, oxidant: ox }] }));
+                  setForm(f => ({ ...f, michaci_pomery: [{ material: mat, oxidant: ox }, ...f.michaci_pomery] }));
                   matInput.value = '';
                   oxInput.value = '';
                 }
