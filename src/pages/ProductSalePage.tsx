@@ -31,6 +31,7 @@ export default function ProductSalePage() {
   const [saving, setSaving] = useState(false);
   const [clientSearch, setClientSearch] = useState('');
   const [showClientSearch, setShowClientSearch] = useState(false);
+  const [selectedClientIndex, setSelectedClientIndex] = useState(0);
   const [productSearches, setProductSearches] = useState<{[key: string]: string}>({});
   const uidRef = useState(createUid)[0];
   const uid = uidRef;
@@ -54,6 +55,11 @@ export default function ProductSalePage() {
         c.telefon?.toLowerCase().includes(clientSearch.toLowerCase())
       )
     : [];
+
+  // Reset selected index when search changes
+  useEffect(() => {
+    setSelectedClientIndex(0);
+  }, [clientSearch]);
 
   useEffect(() => {
     const load = async () => {
@@ -216,22 +222,48 @@ export default function ProductSalePage() {
                   placeholder="Hledat klienta..."
                   value={clientSearch}
                   onChange={e => setClientSearch(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                  onKeyDown={e => {
+                    if (filteredClients.length === 0) return;
+                    
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setSelectedClientIndex(prev => 
+                        prev < filteredClients.length - 1 ? prev + 1 : prev
+                      );
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      setSelectedClientIndex(prev => prev > 0 ? prev - 1 : 0);
+                    } else if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const selectedClient = filteredClients[selectedClientIndex];
+                      if (selectedClient) {
+                        setForm(f => ({ ...f, klient_id: selectedClient.id }));
+                        setClientSearch('');
+                      }
+                    } else if (e.key === 'Escape') {
+                      setClientSearch('');
+                    }
+                  }}
+                  className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                   autoFocus
                 />
                 {filteredClients.length > 0 && (
                   <div className="absolute z-10 mt-2 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-64 overflow-y-auto">
-                    {filteredClients.map(c => (
+                    {filteredClients.map((c, idx) => (
                       <button
                         key={c.id}
                         onClick={() => {
                           setForm(f => ({ ...f, klient_id: c.id }));
                           setClientSearch('');
                         }}
-                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-accent-50 dark:hover:bg-accent-900/20 transition-colors border-b border-gray-50 dark:border-gray-700 last:border-0"
+                        className={`w-full px-4 py-2.5 text-left text-sm transition-colors border-b border-gray-50 dark:border-gray-700 last:border-0 ${
+                          idx === selectedClientIndex
+                            ? 'bg-accent-100 dark:bg-accent-900/30'
+                            : 'hover:bg-accent-50 dark:hover:bg-accent-900/20'
+                        }`}
                       >
                         <span className="font-medium text-gray-900 dark:text-gray-100">{c.jmeno} {c.prijmeni}</span>
-                        {c.telefon && <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500 ml-2 text-xs">• {c.telefon}</span>}
+                        {c.telefon && <span className="text-gray-500 dark:text-gray-400 ml-2 text-xs">• {c.telefon}</span>}
                       </button>
                     ))}
                   </div>
@@ -271,7 +303,7 @@ export default function ProductSalePage() {
                     placeholder="Hledat produkt..."
                     value={productSearches[item.tempId] || ''}
                     onChange={e => setProductSearches({ ...productSearches, [item.tempId]: e.target.value })}
-                    className="w-full px-3 py-2 mb-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 mb-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
 
                   {/* Filtered products */}
