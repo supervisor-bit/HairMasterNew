@@ -1181,31 +1181,71 @@ function MaterialRow({
   const selectedMaterial = mat.material_id ? materialMap.get(mat.material_id) : null;
   const odstinRef = useRef<HTMLInputElement>(null);
   const gramyRef = useRef<HTMLInputElement>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const materialInputRef = useRef<HTMLInputElement>(null);
+
+  const filteredMaterials = materials.filter(m => 
+    m.nazev.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="p-3 bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-700 rounded-lg hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-sm transition-all group">
-      {/* Material buttons - compact */}
-      <div className="flex flex-wrap gap-1.5 mb-2.5">
-        {materials.map(m => (
-          <button
-            key={m.id}
-            onClick={() => {
-              const update: Partial<MaterialVMisceForm> = { material_id: m.id };
-              // Always use the default ratio first
-              update.material_michaci_pomer_material = m.michaci_pomer_material || 1;
-              update.material_michaci_pomer_oxidant = m.michaci_pomer_oxidant || 1;
-              onChange(update);
+      {/* Material autocomplete input */}
+      <div className="mb-2 relative">
+        <input
+          ref={materialInputRef}
+          type="text"
+          placeholder="Začněte psát název materiálu..."
+          value={selectedMaterial ? selectedMaterial.nazev : searchTerm}
+          onChange={e => {
+            setSearchTerm(e.target.value);
+            setShowDropdown(true);
+            if (selectedMaterial) {
+              onChange({ material_id: null });
+            }
+          }}
+          onFocus={() => setShowDropdown(true)}
+          onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && filteredMaterials.length === 1) {
+              e.preventDefault();
+              const m = filteredMaterials[0];
+              onChange({
+                material_id: m.id,
+                material_michaci_pomer_material: m.michaci_pomer_material || 1,
+                material_michaci_pomer_oxidant: m.michaci_pomer_oxidant || 1
+              });
+              setSearchTerm('');
+              setShowDropdown(false);
               setTimeout(() => odstinRef.current?.focus(), 50);
-            }}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-              mat.material_id === m.id
-                ? 'bg-purple-600 dark:bg-purple-700 text-white shadow-sm'
-                : 'bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-600 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:border-purple-300 dark:hover:border-purple-500'
-            }`}
-          >
-            {m.nazev}
-          </button>
-        ))}
+            }
+          }}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-900 dark:text-gray-100"
+        />
+        {showDropdown && searchTerm && filteredMaterials.length > 0 && (
+          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
+            {filteredMaterials.map(m => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => {
+                  onChange({
+                    material_id: m.id,
+                    material_michaci_pomer_material: m.michaci_pomer_material || 1,
+                    material_michaci_pomer_oxidant: m.michaci_pomer_oxidant || 1
+                  });
+                  setSearchTerm('');
+                  setShowDropdown(false);
+                  setTimeout(() => odstinRef.current?.focus(), 50);
+                }}
+                className="w-full px-3 py-2 text-left text-sm hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+              >
+                {m.nazev}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {selectedMaterial && (
@@ -1218,6 +1258,7 @@ function MaterialRow({
                 {/* Default ratio button */}
                 {selectedMaterial.michaci_pomer_material && (
                   <button
+                    type="button"
                     onClick={() => onChange({ 
                       material_michaci_pomer_material: selectedMaterial.michaci_pomer_material,
                       material_michaci_pomer_oxidant: selectedMaterial.michaci_pomer_oxidant
@@ -1236,6 +1277,7 @@ function MaterialRow({
                 {selectedMaterial.michaci_pomery?.map((pomer, idx) => (
                   <button
                     key={idx}
+                    type="button"
                     onClick={() => onChange({ 
                       material_michaci_pomer_material: pomer.material,
                       material_michaci_pomer_oxidant: pomer.oxidant
