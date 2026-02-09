@@ -1183,11 +1183,24 @@ function MaterialRow({
   const gramyRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
   const materialInputRef = useRef<HTMLInputElement>(null);
 
   const filteredMaterials = materials.filter(m => 
     m.nazev.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const selectMaterial = (m: Material) => {
+    onChange({
+      material_id: m.id,
+      material_michaci_pomer_material: m.michaci_pomer_material || 1,
+      material_michaci_pomer_oxidant: m.michaci_pomer_oxidant || 1
+    });
+    setSearchTerm('');
+    setShowDropdown(false);
+    setActiveIndex(0);
+    setTimeout(() => odstinRef.current?.focus(), 50);
+  };
 
   return (
     <div className="p-3 bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-700 rounded-lg hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-sm transition-all group">
@@ -1201,6 +1214,7 @@ function MaterialRow({
           onChange={e => {
             setSearchTerm(e.target.value);
             setShowDropdown(true);
+            setActiveIndex(0);
             if (selectedMaterial) {
               onChange({ material_id: null });
             }
@@ -1208,38 +1222,37 @@ function MaterialRow({
           onFocus={() => setShowDropdown(true)}
           onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
           onKeyDown={e => {
-            if (e.key === 'Enter' && filteredMaterials.length === 1) {
+            if (!showDropdown || filteredMaterials.length === 0) return;
+            
+            if (e.key === 'ArrowDown') {
               e.preventDefault();
-              const m = filteredMaterials[0];
-              onChange({
-                material_id: m.id,
-                material_michaci_pomer_material: m.michaci_pomer_material || 1,
-                material_michaci_pomer_oxidant: m.michaci_pomer_oxidant || 1
-              });
-              setSearchTerm('');
+              setActiveIndex(prev => (prev + 1) % filteredMaterials.length);
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault();
+              setActiveIndex(prev => (prev - 1 + filteredMaterials.length) % filteredMaterials.length);
+            } else if (e.key === 'Enter') {
+              e.preventDefault();
+              selectMaterial(filteredMaterials[activeIndex]);
+            } else if (e.key === 'Escape') {
               setShowDropdown(false);
-              setTimeout(() => odstinRef.current?.focus(), 50);
+              setSearchTerm('');
             }
           }}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-900 dark:text-gray-100"
         />
         {showDropdown && searchTerm && filteredMaterials.length > 0 && (
           <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
-            {filteredMaterials.map(m => (
+            {filteredMaterials.map((m, idx) => (
               <button
                 key={m.id}
                 type="button"
-                onClick={() => {
-                  onChange({
-                    material_id: m.id,
-                    material_michaci_pomer_material: m.michaci_pomer_material || 1,
-                    material_michaci_pomer_oxidant: m.michaci_pomer_oxidant || 1
-                  });
-                  setSearchTerm('');
-                  setShowDropdown(false);
-                  setTimeout(() => odstinRef.current?.focus(), 50);
-                }}
-                className="w-full px-3 py-2 text-left text-sm hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+                onClick={() => selectMaterial(m)}
+                onMouseEnter={() => setActiveIndex(idx)}
+                className={`w-full px-3 py-2 text-left text-sm text-gray-900 dark:text-gray-100 transition-colors ${
+                  idx === activeIndex 
+                    ? 'bg-purple-100 dark:bg-purple-900/30' 
+                    : 'hover:bg-purple-50 dark:hover:bg-purple-900/20'
+                }`}
               >
                 {m.nazev}
               </button>
