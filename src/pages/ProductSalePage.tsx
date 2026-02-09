@@ -33,6 +33,8 @@ export default function ProductSalePage() {
   const [showClientSearch, setShowClientSearch] = useState(false);
   const [selectedClientIndex, setSelectedClientIndex] = useState(0);
   const [productSearches, setProductSearches] = useState<{[key: string]: string}>({});
+  const [selectedProductIndexes, setSelectedProductIndexes] = useState<{[key: string]: number}>({});
+  const quantityInputRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
   const uidRef = useState(createUid)[0];
   const uid = uidRef;
   const productsEndRef = useRef<HTMLDivElement>(null);
@@ -60,6 +62,15 @@ export default function ProductSalePage() {
   useEffect(() => {
     setSelectedClientIndex(0);
   }, [clientSearch]);
+
+  useEffect(() => {
+    // Reset selected product index when any product search changes
+    const newIndexes = { ...selectedProductIndexes };
+    Object.keys(productSearches).forEach(key => {
+      newIndexes[key] = 0;
+    });
+    setSelectedProductIndexes(newIndexes);
+  }, [productSearches]);
 
   useEffect(() => {
     const load = async () => {
@@ -303,6 +314,41 @@ export default function ProductSalePage() {
                     placeholder="Hledat produkt..."
                     value={productSearches[item.tempId] || ''}
                     onChange={e => setProductSearches({ ...productSearches, [item.tempId]: e.target.value })}
+                    onKeyDown={e => {
+                      const filteredProducts = products.filter(p => {
+                        const search = productSearches[item.tempId]?.toLowerCase() || '';
+                        return p.nazev.toLowerCase().includes(search);
+                      }).slice(0, 20);
+                      
+                      if (filteredProducts.length === 0) return;
+                      const currentIndex = selectedProductIndexes[item.tempId] || 0;
+                      
+                      if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        const newIndex = currentIndex < filteredProducts.length - 1 ? currentIndex + 1 : currentIndex;
+                        setSelectedProductIndexes({ ...selectedProductIndexes, [item.tempId]: newIndex });
+                      } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const newIndex = currentIndex > 0 ? currentIndex - 1 : 0;
+                        setSelectedProductIndexes({ ...selectedProductIndexes, [item.tempId]: newIndex });
+                      } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const selectedProduct = filteredProducts[currentIndex];
+                        if (selectedProduct) {
+                          const newProdukty = [...form.produkty];
+                          newProdukty[idx] = { ...item, produkt_id: selectedProduct.id, cena_za_ks: selectedProduct.cena };
+                          setForm(f => ({ ...f, produkty: newProdukty }));
+                          setProductSearches({ ...productSearches, [item.tempId]: '' });
+                          // Focus na množství po výběru
+                          setTimeout(() => {
+                            quantityInputRefs.current[item.tempId]?.focus();
+                            quantityInputRefs.current[item.tempId]?.select();
+                          }, 100);
+                        }
+                      } else if (e.key === 'Escape') {
+                        setProductSearches({ ...productSearches, [item.tempId]: '' });
+                      }
+                    }}
                     className="w-full px-3 py-2 mb-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
 
@@ -314,26 +360,35 @@ export default function ProductSalePage() {
                         return p.nazev.toLowerCase().includes(search);
                       })
                       .slice(0, 20)
-                      .map(p => (
-                        <button
-                          key={p.id}
-                          onClick={() => {
-                            const newProdukty = [...form.produkty];
-                            newProdukty[idx] = { ...item, produkt_id: p.id, cena_za_ks: p.cena };
-                            setForm(f => ({ ...f, produkty: newProdukty }));
-                            // Clear search after selection
-                            setProductSearches({ ...productSearches, [item.tempId]: '' });
-                          }}
-                          className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
-                            item.produkt_id === p.id
-                              ? 'bg-emerald-600 text-white shadow-sm'
-                              : 'bg-white dark:bg-gray-800 border border-emerald-200 dark:border-emerald-700 text-gray-700 dark:text-gray-300 hover:border-emerald-400 dark:hover:border-emerald-500'
-                          }`}
-                        >
-                          {p.nazev}
-                          <span className="ml-1.5 text-xs opacity-70">{p.cena} Kč</span>
-                        </button>
-                      ))}
+                      .map((p, pIdx) => {
+                        const isSelected = (selectedProductIndexes[item.tempId] || 0) === pIdx;
+                        return (
+                          <button
+                            key={p.id}
+                            onClick={() => {
+                              const newProdukty = [...form.produkty];
+                              newProdukty[idx] = { ...item, produkt_id: p.id, cena_za_ks: p.cena };
+                              setForm(f => ({ ...f, produkty: newProdukty }));
+                              setProductSearches({ ...productSearches, [item.tempId]: '' });
+                              // Focus na množství po výběru
+                              setTimeout(() => {
+                                quantityInputRefs.current[item.tempId]?.focus();
+                                quantityInputRefs.current[item.tempId]?.select();
+                              }, 100);
+                            }}
+                            className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
+                              item.produkt_id === p.id
+                                ? 'bg-emerald-600 text-white shadow-sm'
+                                : isSelected
+                                ? 'bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-400 dark:border-emerald-500 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 border border-emerald-200 dark:border-emerald-700 text-gray-700 dark:text-gray-300 hover:border-emerald-400 dark:hover:border-emerald-500'
+                            }`}
+                          >
+                            {p.nazev}
+                            <span className="ml-1.5 text-xs opacity-70">{p.cena} Kč</span>
+                          </button>
+                        );
+                      })}
                     {productSearches[item.tempId]?.trim() && products.filter(p => {
                       const search = productSearches[item.tempId]?.toLowerCase() || '';
                       return p.nazev.toLowerCase().includes(search);
@@ -363,17 +418,21 @@ export default function ProductSalePage() {
 
                 {produkt && (
                   <div className="grid grid-cols-2 gap-3">
-                    <Input
-                      type="number"
-                      label="Počet kusů"
-                      value={item.pocet_ks}
-                      onChange={e => {
-                        const newProdukty = [...form.produkty];
-                        newProdukty[idx] = { ...item, pocet_ks: e.target.value };
-                        setForm(f => ({ ...f, produkty: newProdukty }));
-                      }}
-                      min={1}
-                    />
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Počet kusů</label>
+                      <input
+                        ref={el => quantityInputRefs.current[item.tempId] = el}
+                        type="number"
+                        value={item.pocet_ks}
+                        onChange={e => {
+                          const newProdukty = [...form.produkty];
+                          newProdukty[idx] = { ...item, pocet_ks: e.target.value };
+                          setForm(f => ({ ...f, produkty: newProdukty }));
+                        }}
+                        min={1}
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
                     <Input
                       type="number"
                       label="Cena za kus (Kč)"
