@@ -76,6 +76,7 @@ export default function VisitNewPageImproved() {
   const [showSummary, setShowSummary] = useState(false);
   const [clientSearch, setClientSearch] = useState('');
   const [productSearches, setProductSearches] = useState<{[key: string]: string}>({});
+  const [productDropdownStates, setProductDropdownStates] = useState<{[key: string]: { show: boolean, activeIndex: number }}>({});
   const [showNewClient, setShowNewClient] = useState(false);
   const [newClientForm, setNewClientForm] = useState({ jmeno: '', prijmeni: '', telefon: '', alergie: '' });
 
@@ -560,10 +561,15 @@ export default function VisitNewPageImproved() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
         {isCopy ? 'Nová návštěva (kopie receptury)' : 'Nová návštěva'}
       </h1>
+
+      {/* Two column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* LEFT COLUMN - Editor */}
+        <div className="lg:col-span-2 space-y-6">
 
       {/* Client selection */}
       <Card className="mb-6 animate-fade-in">
@@ -1024,76 +1030,92 @@ export default function VisitNewPageImproved() {
                 <div className="mb-3">
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 dark:text-gray-500 mb-2">Produkt</label>
                   
-                  {/* Search input */}
-                  <input
-                    type="text"
-                    placeholder="Hledat produkt..."
-                    value={productSearches[prod.tempId] || ''}
-                    onChange={e => setProductSearches({ ...productSearches, [prod.tempId]: e.target.value })}
-                    className="w-full px-3 py-2 mb-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-900 dark:text-gray-100"
-                  />
-
-                  {/* Filtered products */}
-                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                    {productSearches[prod.tempId]?.trim() && produktyCatalog
-                      .filter(p => {
-                        const search = productSearches[prod.tempId]?.toLowerCase() || '';
-                        return p.nazev.toLowerCase().includes(search);
-                      })
-                      .slice(0, 20)
-                      .map(p => (
-                        <button
-                          key={p.id}
-                          onClick={() => {
-                            setForm(f => ({
-                              ...f,
-                              produkty: f.produkty.map((pr, i) =>
-                                i === pIdx
-                                  ? { ...pr, produkt_id: p.id, cena_za_ks: p.cena }
-                                  : pr
-                              ),
-                            }));
-                            // Clear search after selection
-                            setProductSearches({ ...productSearches, [prod.tempId]: '' });
+                  {/* Autocomplete input */}
+                  {(() => {
+                    const selectedProduct = prod.produkt_id ? produktyCatalog.find(p => p.id === prod.produkt_id) : null;
+                    const searchTerm = productSearches[prod.tempId] || '';
+                    const dropdownState = productDropdownStates[prod.tempId] || { show: false, activeIndex: 0 };
+                    const filteredProducts = searchTerm.trim()
+                      ? produktyCatalog.filter(p => p.nazev.toLowerCase().includes(searchTerm.toLowerCase()))
+                      : [];
+                    
+                    const selectProduct = (p: Produkt) => {
+                      setForm(f => ({
+                        ...f,
+                        produkty: f.produkty.map((pr, i) =>
+                          i === pIdx ? { ...pr, produkt_id: p.id, cena_za_ks: p.cena } : pr
+                        ),
+                      }));
+                      setProductSearches({ ...productSearches, [prod.tempId]: '' });
+                      setProductDropdownStates({ ...productDropdownStates, [prod.tempId]: { show: false, activeIndex: 0 } });
+                    };
+                    
+                    return (
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Začněte psát název produktu..."
+                          value={selectedProduct ? selectedProduct.nazev : searchTerm}
+                          onChange={e => {
+                            setProductSearches({ ...productSearches, [prod.tempId]: e.target.value });
+                            setProductDropdownStates({ ...productDropdownStates, [prod.tempId]: { show: true, activeIndex: 0 } });
+                            if (selectedProduct) {
+                              setForm(f => ({
+                                ...f,
+                                produkty: f.produkty.map((pr, i) => i === pIdx ? { ...pr, produkt_id: null } : pr),
+                              }));
+                            }
                           }}
-                          className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
-                            prod.produkt_id === p.id
-                              ? 'bg-emerald-600 dark:bg-emerald-700 text-white shadow-sm'
-                              : 'bg-white dark:bg-gray-800 border border-emerald-200 dark:border-emerald-700 text-gray-700 dark:text-gray-300 hover:border-emerald-400 dark:hover:border-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300'
-                          }`}
-                        >
-                          {p.nazev}
-                          <span className="ml-1.5 text-xs opacity-70">{p.cena} Kč</span>
-                        </button>
-                      ))}
-                    {productSearches[prod.tempId]?.trim() && produktyCatalog.filter(p => {
-                      const search = productSearches[prod.tempId]?.toLowerCase() || '';
-                      return p.nazev.toLowerCase().includes(search);
-                    }).length > 20 && (
-                      <div className="w-full text-center text-xs text-gray-500 dark:text-gray-400 py-2">
-                        ... a další {produktyCatalog.filter(p => {
-                          const search = productSearches[prod.tempId]?.toLowerCase() || '';
-                          return p.nazev.toLowerCase().includes(search);
-                        }).length - 20} produktů (upřesněte hledání)
-                      </div>
-                    )}
-                    {!productSearches[prod.tempId]?.trim() && !prod.produkt_id && (
-                      <div className="w-full text-center text-sm text-gray-400 dark:text-gray-500 py-4">
-                        👆 Začněte psát název produktu...
-                      </div>
-                    )}
-                    {prod.produkt_id && (() => {
-                      const produkt = produktyCatalog.find(p => p.id === prod.produkt_id);
-                      return produkt ? (
-                        <div className="w-full">
-                          <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium bg-emerald-600 dark:bg-emerald-700 text-white">
-                            ✓ {produkt.nazev}
-                            <span className="text-xs opacity-70">{produkt.cena} Kč</span>
+                          onFocus={() => setProductDropdownStates({ ...productDropdownStates, [prod.tempId]: { ...dropdownState, show: true } })}
+                          onBlur={() => setTimeout(() => setProductDropdownStates({ ...productDropdownStates, [prod.tempId]: { ...dropdownState, show: false } }), 200)}
+                          onKeyDown={e => {
+                            if (!dropdownState.show || filteredProducts.length === 0) return;
+                            
+                            if (e.key === 'ArrowDown') {
+                              e.preventDefault();
+                              setProductDropdownStates({
+                                ...productDropdownStates,
+                                [prod.tempId]: { ...dropdownState, activeIndex: (dropdownState.activeIndex + 1) % filteredProducts.length }
+                              });
+                            } else if (e.key === 'ArrowUp') {
+                              e.preventDefault();
+                              setProductDropdownStates({
+                                ...productDropdownStates,
+                                [prod.tempId]: { ...dropdownState, activeIndex: (dropdownState.activeIndex - 1 + filteredProducts.length) % filteredProducts.length }
+                              });
+                            } else if (e.key === 'Enter') {
+                              e.preventDefault();
+                              selectProduct(filteredProducts[dropdownState.activeIndex]);
+                            } else if (e.key === 'Escape') {
+                              setProductDropdownStates({ ...productDropdownStates, [prod.tempId]: { show: false, activeIndex: 0 } });
+                              setProductSearches({ ...productSearches, [prod.tempId]: '' });
+                            }
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-900 dark:text-gray-100"
+                        />
+                        {dropdownState.show && searchTerm && filteredProducts.length > 0 && (
+                          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                            {filteredProducts.map((p, idx) => (
+                              <button
+                                key={p.id}
+                                type="button"
+                                onClick={() => selectProduct(p)}
+                                onMouseEnter={() => setProductDropdownStates({ ...productDropdownStates, [prod.tempId]: { ...dropdownState, activeIndex: idx } })}
+                                className={`w-full px-3 py-2 text-left text-sm transition-colors flex items-center justify-between ${
+                                  idx === dropdownState.activeIndex
+                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-900 dark:text-emerald-100'
+                                    : 'text-gray-900 dark:text-gray-100 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+                                }`}
+                              >
+                                <span>{p.nazev}</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">{p.cena} Kč</span>
+                              </button>
+                            ))}
                           </div>
-                        </div>
-                      ) : null;
-                    })()}
-                  </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {prod.produkt_id && (
@@ -1189,11 +1211,95 @@ export default function VisitNewPageImproved() {
         />
       </Card>
 
-      <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t border-gray-200 dark:border-gray-700 -mx-4 sm:mx-0 px-4 py-4 sm:bg-transparent sm:border-0 sm:backdrop-blur-none">
+      <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t border-gray-200 dark:border-gray-700 -mx-4 sm:mx-0 px-4 py-4 sm:bg-transparent sm:border-0 sm:backdrop-blur-none lg:hidden">
         <div className="flex justify-end">
           <Button onClick={handleShowSummary} size="lg" className="shadow-lg sm:shadow-sm">
             Pokračovat k souhrnu →
           </Button>
+        </div>
+      </div>
+        </div>
+
+        {/* RIGHT COLUMN - Live Summary (desktop only) */}
+        <div className="hidden lg:block">
+          <div className="sticky top-6">
+            <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-700">
+              <h2 className="text-lg font-bold text-purple-900 dark:text-purple-100 mb-4 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                Živý náhled
+              </h2>
+
+              {/* Client info */}
+              <div className="mb-4 pb-4 border-b border-purple-200 dark:border-purple-700">
+                <div className="text-sm text-purple-700 dark:text-purple-300 mb-1">Klient</div>
+                <div className="font-semibold text-purple-900 dark:text-purple-100">
+                  {selectedClient ? `${selectedClient.jmeno} ${selectedClient.prijmeni}` : 'Není vybrán'}
+                </div>
+                <div className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                  {new Date(form.datum).toLocaleDateString('cs-CZ')}
+                </div>
+              </div>
+
+              {/* Services summary */}
+              {form.sluzby.length > 0 && (
+                <div className="space-y-3 mb-4">
+                  {form.sluzby.map((sluzba, sIdx) => {
+                    const totalMaterialGrams = sluzba.misky.reduce((sum, miska) => 
+                      sum + miska.materialy.reduce((matSum, mat) => {
+                        const g = typeof mat.gramy_materialu === 'string' ? parseFloat(mat.gramy_materialu) : mat.gramy_materialu;
+                        return matSum + (isNaN(g) ? 0 : g);
+                      }, 0), 0);
+                    const totalOxidantGrams = sluzba.misky.reduce((sum, m) => sum + (m.gramy_oxidantu || 0), 0);
+                    
+                    return (
+                      <div key={sluzba.tempId} className="p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="service" className="text-xs">{sIdx + 1}</Badge>
+                          <div className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
+                            {sluzba.nazev || 'Bez názvu'}
+                          </div>
+                        </div>
+                        {sluzba.misky.length > 0 && (
+                          <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                            <div>🎨 Misek: {sluzba.misky.length}</div>
+                            <div>📦 Celkem: {totalMaterialGrams + totalOxidantGrams}g</div>
+                            {totalMaterialGrams > 0 && <div className="text-purple-600 dark:text-purple-400">→ {totalMaterialGrams}g mat. + {totalOxidantGrams}g ox.</div>}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Products summary */}
+              {form.produkty.filter(p => p.produkt_id).length > 0 && (
+                <div className="mb-4 pb-4 border-t border-purple-200 dark:border-purple-700 pt-4">
+                  <div className="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2">Produkty na doma</div>
+                  <div className="space-y-2">
+                    {form.produkty.filter(p => p.produkt_id).map(prod => {
+                      const produkt = produktyCatalog.find(p => p.id === prod.produkt_id);
+                      const total = ((typeof prod.pocet_ks === 'string' ? parseInt(prod.pocet_ks) : prod.pocet_ks) || 0) *
+                        ((typeof prod.cena_za_ks === 'string' ? parseFloat(prod.cena_za_ks) : prod.cena_za_ks) || 0);
+                      return produkt ? (
+                        <div key={prod.tempId} className="text-xs text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                          <span className="truncate">{produkt.nazev} × {prod.pocet_ks}</span>
+                          <span className="font-semibold text-emerald-700 dark:text-emerald-400">{total} Kč</span>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Action button */}
+              <Button onClick={handleShowSummary} className="w-full" size="lg">
+                Pokračovat k souhrnu →
+              </Button>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
