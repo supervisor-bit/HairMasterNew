@@ -4,6 +4,7 @@ import { getVisits, getProdeje } from '@/lib/firestore';
 import type { Navsteva, Prodej } from '@/lib/types';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Card from '@/components/Card';
+import Badge from '@/components/Badge';
 import Button from '@/components/Button';
 import * as XLSX from 'xlsx';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -23,7 +24,25 @@ interface YearlyRevenue {
   celkem: number;
 }
 
-type TabType = 'prehled' | 'roky' | 'statistiky' | 'export';
+interface DailyStats {
+  hotovost: number;
+  qr: number;
+  celkem: number;
+  hotovostCount: number;
+  qrCount: number;
+  celkemCount: number;
+}
+
+interface Transaction {
+  id: string;
+  cas: string;
+  klient: string;
+  castka: number;
+  metoda: 'hotovost' | 'qr' | undefined;
+  typ: 'navsteva' | 'prodej';
+}
+
+type TabType = 'prehled' | 'roky' | 'statistiky' | 'export' | 'pokladna';
 
 export default function TrzbyPage() {
   const { user } = useAuth();
@@ -32,6 +51,18 @@ export default function TrzbyPage() {
   const [yearlyData, setYearlyData] = useState<YearlyRevenue[]>([]);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [activeTab, setActiveTab] = useState<TabType>('prehled');
+  
+  // Pokladna state
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [dailyStats, setDailyStats] = useState<DailyStats>({
+    hotovost: 0,
+    qr: 0,
+    celkem: 0,
+    hotovostCount: 0,
+    qrCount: 0,
+    celkemCount: 0,
+  });
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -117,10 +148,82 @@ export default function TrzbyPage() {
 
       setMonthlyData(monthlyArray);
       setYearlyData(yearlyArray);
+      
+      // Calculate daily stats for Pokladna tab
+      if (activeTab === 'pokladna') {
+        const dayVisits = (visits as Navsteva[]).filter(v => 
+          v.datum.split('T')[0] === selectedDate
+        );
+        const daySales = (sales as Prodej[]).filter(s => 
+          s.datum.split('T')[0] === selectedDate
+        );
+        
+        let hotovost = 0, qr = 0, celkem = 0;
+        let hotovostCount = 0, qrCount = 0, celkemCount = 0;
+        const trans: Transaction[] = [];
+        
+        dayVisits.forEach(v => {
+          const castka = v.celkova_castka || 0;
+          celkem += castka;
+          celkemCount++;
+          
+          if (v.platebni_metoda === 'hotovost') {
+            hotovost += castka;
+            hotovostCount++;
+          } else if (v.platebni_metoda === 'qr') {
+            qr += castka;
+            qrCount++;
+          } else {
+            // Pro staré záznamy bez platební metody předpokládáme hotovost
+            hotovost += castka;
+            hotovostCount++;
+          }
+          
+          trans.push({
+            id: v.id,
+            cas: new Date(v.datum).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' }),
+            klient: v.jmeno_klienta || 'Neznámý',
+            castka,
+            metoda: v.platebni_metoda || 'hotovost',
+            typ: 'navsteva',
+          });
+        });
+        
+        daySales.forEach(s => {
+          const castka = s.celkova_castka || 0;
+          celkem += castka;
+          celkemCount++;
+          
+          if (s.platebni_metoda === 'hotovost') {
+            hotovost += castka;
+            hotovostCount++;
+          } else if (s.platebni_metoda === 'qr') {
+            qr += castka;
+            qrCount++;
+          } else {
+            hotovost += castka;
+            hotovostCount++;
+          }
+          
+          trans.push({
+            id: s.id,
+            cas: new Date(s.datum).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' }),
+            klient: s.jmeno_zakaznika || 'Cizí zákazník',
+            castka,
+            metoda: s.platebni_metoda || 'hotovost',
+            typ: 'prodej',
+          });
+        });
+        
+        trans.sort((a, b) => b.cas.localeCompare(a.cas));
+        
+        setDailyStats({ hotovost, qr, celkem, hotovostCount, qrCount, celkemCount });
+        setTransactions(trans);
+      }
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, activeTab, selectedDate]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -277,6 +380,17 @@ export default function TrzbyPage() {
         >
           <DocumentIcon className="w-4 h-4" />
           Export
+        </button>
+        <button
+          onClick={() => setActiveTab('pokladna')}
+          className={`flex items-center gap-2 px-4 py-2 font-medium transition-all border-b-2 ${
+            activeTab === 'pokladna'
+              ? 'border-accent-600 text-accent-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <CashIcon className="w-4 h-4" />
+          Pokladna
         </button>
       </div>
 
@@ -608,6 +722,174 @@ export default function TrzbyPage() {
           )}
         </>
       )}
+      
+      {/* Pokladna Tab */}
+      {activeTab === 'pokladna' && (
+        <>
+          {/* Date Picker */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Vyberte den
+            </label>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            />
+          </div>
+
+          {/* Daily Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Card>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Hotovost</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {dailyStats.hotovost.toLocaleString('cs-CZ')} Kč
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                    {dailyStats.hotovostCount} transakcí
+                  </p>
+                </div>
+                <Badge variant="success">Hotovost</Badge>
+              </div>
+              {/* Payment distribution bar */}
+              {dailyStats.celkem > 0 && (
+                <div className="mt-3">
+                  <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-green-500"
+                      style={{ width: `${(dailyStats.hotovost / dailyStats.celkem) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                    {((dailyStats.hotovost / dailyStats.celkem) * 100).toFixed(1)}% z celkových tržeb
+                  </p>
+                </div>
+              )}
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">QR kód</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {dailyStats.qr.toLocaleString('cs-CZ')} Kč
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                    {dailyStats.qrCount} transakcí
+                  </p>
+                </div>
+                <Badge variant="info">QR</Badge>
+              </div>
+              {dailyStats.celkem > 0 && (
+                <div className="mt-3">
+                  <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-blue-500"
+                      style={{ width: `${(dailyStats.qr / dailyStats.celkem) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                    {((dailyStats.qr / dailyStats.celkem) * 100).toFixed(1)}% z celkových tržeb
+                  </p>
+                </div>
+              )}
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Celkem</p>
+                  <p className="text-2xl font-bold text-accent-600">
+                    {dailyStats.celkem.toLocaleString('cs-CZ')} Kč
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                    {dailyStats.celkemCount} transakcí
+                  </p>
+                </div>
+                <Badge variant="default">Všechny</Badge>
+              </div>
+            </Card>
+          </div>
+
+          {/* Transactions List */}
+          <Card>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Transakce za den
+              </h2>
+              <Button
+                onClick={() => {
+                  const date = new Date(selectedDate);
+                  const dateStr = date.toLocaleDateString('cs-CZ');
+                  let text = `DENNÍ UZÁVĚRKA - ${dateStr}\n`;
+                  text += `${'='.repeat(40)}\n\n`;
+                  text += `Hotovost: ${dailyStats.hotovost.toLocaleString('cs-CZ')} Kč (${dailyStats.hotovostCount}x)\n`;
+                  text += `QR kód: ${dailyStats.qr.toLocaleString('cs-CZ')} Kč (${dailyStats.qrCount}x)\n`;
+                  text += `${'-'.repeat(40)}\n`;
+                  text += `CELKEM: ${dailyStats.celkem.toLocaleString('cs-CZ')} Kč (${dailyStats.celkemCount}x)\n\n`;
+                  text += `TRANSAKCE:\n`;
+                  transactions.forEach(t => {
+                    text += `${t.cas} | ${t.klient} | ${t.castka.toLocaleString('cs-CZ')} Kč | ${t.metoda === 'hotovost' ? 'Hotovost' : 'QR'}\n`;
+                  });
+                  const blob = new Blob([text], { type: 'text/plain' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `uzaverka-${selectedDate}.txt`;
+                  a.click();
+                }}
+                variant="outline"
+              >
+                Export uzávěrky
+              </Button>
+            </div>
+
+            {transactions.length === 0 ? (
+              <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                Žádné transakce pro vybraný den
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">Čas</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">Klient</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">Typ</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">Částka</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">Platba</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {transactions.map(t => (
+                      <tr key={t.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{t.cas}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{t.klient}</td>
+                        <td className="px-4 py-3 text-sm">
+                          <Badge variant={t.typ === 'navsteva' ? 'success' : 'info'}>
+                            {t.typ === 'navsteva' ? 'Návštěva' : 'Prodej'}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-gray-100">
+                          {t.castka.toLocaleString('cs-CZ')} Kč
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <Badge variant={t.metoda === 'hotovost' ? 'success' : 'info'}>
+                            {t.metoda === 'hotovost' ? 'Hotovost' : 'QR kód'}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        </>
+      )}
     </div>
   );
 }
@@ -640,6 +922,14 @@ function DocumentIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+    </svg>
+  );
+}
+
+function CashIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
     </svg>
   );
 }

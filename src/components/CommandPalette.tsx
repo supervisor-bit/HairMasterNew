@@ -179,16 +179,6 @@ export default function CommandPalette() {
         },
       },
       {
-        id: 'nav-pokladna',
-        label: 'Pokladna',
-        icon: CashIcon,
-        category: 'navigace',
-        action: () => {
-          setIsOpen(false);
-          navigate('/pokladna');
-        },
-      },
-      {
         id: 'nav-statistics',
         label: 'Statistiky',
         icon: BeakerIcon,
