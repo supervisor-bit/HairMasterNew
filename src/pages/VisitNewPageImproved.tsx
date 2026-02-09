@@ -64,6 +64,7 @@ export default function VisitNewPageImproved() {
   const sluzbyRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const miskyRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const materialyRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const materialInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
   const produktyRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const [clients, setClients] = useState<Klient[]>([]);
@@ -95,6 +96,11 @@ export default function VisitNewPageImproved() {
       const element = refMap.current.get(tempId);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      // If it's a material, also focus the input
+      const input = materialInputRefs.current.get(tempId);
+      if (input) {
+        setTimeout(() => input.focus(), 100);
       }
     }, 100);
   };
@@ -566,6 +572,32 @@ export default function VisitNewPageImproved() {
         {isCopy ? 'Nová návštěva (kopie receptury)' : 'Nová návštěva'}
       </h1>
 
+      {/* Keyboard shortcuts panel - sticky */}
+      <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-700 rounded-lg px-4 py-2 mb-6 shadow-sm">
+        <div className="flex items-center gap-6 text-xs text-gray-600 dark:text-gray-400 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <kbd className="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">Ctrl+S</kbd>
+            <span>Souhrn</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <kbd className="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">Ctrl+N</kbd>
+            <span>Nová služba</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <kbd className="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">Enter</kbd>
+            <span>Další materiál (v gramech)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <kbd className="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">↑↓</kbd>
+            <span>Navigace v autocomplete</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <kbd className="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">Esc</kbd>
+            <span>Zavřít</span>
+          </div>
+        </div>
+      </div>
+
       {/* Two column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT COLUMN - Editor */}
@@ -901,6 +933,7 @@ export default function VisitNewPageImproved() {
                           mat={mat}
                           materials={materials}
                           materialMap={materialMap}
+                          materialInputRefs={materialInputRefs}
                           onChange={(update) => updateMaterial(sIdx, mIdx, matIdx, update)}
                           onRemove={
                             miska.materialy.length > 1
@@ -1374,6 +1407,7 @@ function MaterialRow({
   mat,
   materials,
   materialMap,
+  materialInputRefs,
   onChange,
   onRemove,
   onAddNext,
@@ -1381,6 +1415,7 @@ function MaterialRow({
   mat: MaterialVMisceForm;
   materials: Material[];
   materialMap: Map<string, Material>;
+  materialInputRefs?: React.MutableRefObject<Map<string, HTMLInputElement>>;
   onChange: (update: Partial<MaterialVMisceForm>) => void;
   onRemove?: () => void;
   onAddNext?: () => void;
@@ -1414,7 +1449,12 @@ function MaterialRow({
       {/* Material autocomplete input */}
       <div className="mb-2 relative">
         <input
-          ref={materialInputRef}
+          ref={(el) => {
+            materialInputRef.current = el;
+            if (el && materialInputRefs) {
+              materialInputRefs.current.set(mat.tempId, el);
+            }
+          }}
           type="text"
           placeholder="Začněte psát název materiálu..."
           value={selectedMaterial ? selectedMaterial.nazev : searchTerm}
