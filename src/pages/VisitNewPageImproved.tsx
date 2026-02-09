@@ -86,6 +86,7 @@ export default function VisitNewPageImproved() {
     datum: new Date().toISOString().slice(0, 10),
     celkova_castka: '',
     poznamka: '',
+    platebni_metoda: 'hotovost',
     sluzby: [],
     produkty: [],
   });
@@ -551,6 +552,37 @@ export default function VisitNewPageImproved() {
               className="w-48"
               placeholder="Nepovinné"
             />
+            
+            {/* Platební metoda */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Způsob platby
+              </label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="platebni_metoda"
+                    value="hotovost"
+                    checked={form.platebni_metoda === 'hotovost'}
+                    onChange={e => setForm(f => ({ ...f, platebni_metoda: e.target.value as 'hotovost' | 'qr' }))}
+                    className="w-4 h-4 text-accent-600 focus:ring-accent-500"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">💵 Hotovost</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="platebni_metoda"
+                    value="qr"
+                    checked={form.platebni_metoda === 'qr'}
+                    onChange={e => setForm(f => ({ ...f, platebni_metoda: e.target.value as 'hotovost' | 'qr' }))}
+                    className="w-4 h-4 text-accent-600 focus:ring-accent-500"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">📱 QR kód</span>
+                </label>
+              </div>
+            </div>
           </div>
         </Card>
 

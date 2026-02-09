@@ -42,6 +42,7 @@ export default function ProductSalePage() {
     walk_in_name: '',
     datum: new Date().toISOString().slice(0, 10),
     poznamka: '',
+    platebni_metoda: 'hotovost' as 'hotovost' | 'qr',
     produkty: [{ tempId: uid(), produkt_id: null, pocet_ks: 1, cena_za_ks: '' }] as SaleItem[],
   });
 
@@ -106,6 +107,7 @@ export default function ProductSalePage() {
           klient_prijmeni: selectedClient?.prijmeni,
           datum: form.datum,
           poznamka: form.poznamka,
+          platebni_metoda: form.platebni_metoda,
           castka_sluzby: null,
           castka_produkty: totalAmount,
           celkova_castka: totalAmount,
@@ -125,6 +127,7 @@ export default function ProductSalePage() {
           klient_prijmeni: '',
           datum: form.datum,
           poznamka: form.poznamka,
+          platebni_metoda: form.platebni_metoda,
           produkty: validProdukty.map(p => ({
             produkt_id: p.produkt_id!,
             produkt_nazev: products.find(pr => pr.id === p.produkt_id)?.nazev || '',
@@ -402,6 +405,37 @@ export default function ProductSalePage() {
           <span className="text-3xl font-bold text-emerald-700 dark:text-emerald-400">
             {calculateTotal().toLocaleString('cs-CZ')} Kč
           </span>
+        </div>
+      </Card>
+
+      {/* Platební metoda */}
+      <Card className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Způsob platby
+        </label>
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="platebni_metoda"
+              value="hotovost"
+              checked={form.platebni_metoda === 'hotovost'}
+              onChange={e => setForm(f => ({ ...f, platebni_metoda: e.target.value as 'hotovost' | 'qr' }))}
+              className="w-4 h-4 text-accent-600 focus:ring-accent-500"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">💵 Hotovost</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="platebni_metoda"
+              value="qr"
+              checked={form.platebni_metoda === 'qr'}
+              onChange={e => setForm(f => ({ ...f, platebni_metoda: e.target.value as 'hotovost' | 'qr' }))}
+              className="w-4 h-4 text-accent-600 focus:ring-accent-500"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">📱 QR kód</span>
+          </label>
         </div>
       </Card>
 

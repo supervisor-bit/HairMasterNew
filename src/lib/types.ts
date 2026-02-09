@@ -27,6 +27,7 @@ export interface Navsteva {
   castka_produkty: number | null;
   celkova_castka: number | null;
   poznamka: string | null;
+  platebni_metoda?: 'hotovost' | 'qr';
   created_at: string;
   klient_jmeno?: string;
   klient_prijmeni?: string;
@@ -106,6 +107,7 @@ export interface Prodej {
   poznamka: string | null;
   produkty: ProduktVProdeji[];
   celkova_castka: number;
+  platebni_metoda?: 'hotovost' | 'qr';
   created_at: string;
 }
 
@@ -169,6 +171,7 @@ export interface NavstevaForm {
   datum: string;
   celkova_castka: number | string;
   poznamka: string;
+  platebni_metoda?: 'hotovost' | 'qr';
   sluzby: SluzbaForm[];
   produkty: ProdejProduktuForm[];
 }
