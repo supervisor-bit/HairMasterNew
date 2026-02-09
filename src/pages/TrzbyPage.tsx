@@ -40,6 +40,8 @@ interface Transaction {
   castka: number;
   metoda: 'hotovost' | 'qr' | undefined;
   typ: 'navsteva' | 'prodej';
+  sluzby?: number;
+  produkty?: number;
 }
 
 type TabType = 'prehled' | 'roky' | 'statistiky' | 'export' | 'pokladna';
@@ -182,10 +184,14 @@ export default function TrzbyPage() {
           trans.push({
             id: v.id,
             cas: new Date(v.datum).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' }),
-            klient: v.jmeno_klienta || 'Neznámý',
+            klient: v.klient_jmeno && v.klient_prijmeni 
+              ? `${v.klient_jmeno} ${v.klient_prijmeni}`
+              : v.klient_jmeno || 'Neznámý klient',
             castka,
             metoda: v.platebni_metoda || 'hotovost',
             typ: 'navsteva',
+            sluzby: v.castka_sluzby || 0,
+            produkty: v.castka_produkty || 0,
           });
         });
         
@@ -212,6 +218,8 @@ export default function TrzbyPage() {
             castka,
             metoda: s.platebni_metoda || 'hotovost',
             typ: 'prodej',
+            sluzby: 0,
+            produkty: s.celkova_castka || 0,
           });
         });
         
@@ -831,8 +839,14 @@ export default function TrzbyPage() {
                   text += `${'-'.repeat(40)}\n`;
                   text += `CELKEM: ${dailyStats.celkem.toLocaleString('cs-CZ')} Kč (${dailyStats.celkemCount}x)\n\n`;
                   text += `TRANSAKCE:\n`;
+                  text += `${'='.repeat(90)}\n`;
+                  text += `Čas  | Klient                    | Služby        | Produkty      | Celkem        | Platba\n`;
+                  text += `${'-'.repeat(90)}\n`;
                   transactions.forEach(t => {
-                    text += `${t.cas} | ${t.klient} | ${t.castka.toLocaleString('cs-CZ')} Kč | ${t.metoda === 'hotovost' ? 'Hotovost' : 'QR'}\n`;
+                    const sluzbyStr = t.sluzby ? `${t.sluzby.toLocaleString('cs-CZ')} Kč` : '—';
+                    const produktyStr = t.produkty ? `${t.produkty.toLocaleString('cs-CZ')} Kč` : '—';
+                    const klientStr = t.klient.padEnd(25).substring(0, 25);
+                    text += `${t.cas} | ${klientStr} | ${sluzbyStr.padEnd(13)} | ${produktyStr.padEnd(13)} | ${t.castka.toLocaleString('cs-CZ').padEnd(13)} Kč | ${t.metoda === 'hotovost' ? 'Hotovost' : 'QR'}\n`;
                   });
                   const blob = new Blob([text], { type: 'text/plain' });
                   const url = URL.createObjectURL(blob);
@@ -859,6 +873,8 @@ export default function TrzbyPage() {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">Čas</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">Klient</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">Typ</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">Služby</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">Produkty</th>
                       <th className="px-4 py-3 text-right text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">Částka</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">Platba</th>
                     </tr>
@@ -872,6 +888,12 @@ export default function TrzbyPage() {
                           <Badge variant={t.typ === 'navsteva' ? 'success' : 'info'}>
                             {t.typ === 'navsteva' ? 'Návštěva' : 'Prodej'}
                           </Badge>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-right text-gray-600 dark:text-gray-400">
+                          {t.sluzby ? `${t.sluzby.toLocaleString('cs-CZ')} Kč` : '—'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-right text-gray-600 dark:text-gray-400">
+                          {t.produkty ? `${t.produkty.toLocaleString('cs-CZ')} Kč` : '—'}
                         </td>
                         <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-gray-100">
                           {t.castka.toLocaleString('cs-CZ')} Kč
