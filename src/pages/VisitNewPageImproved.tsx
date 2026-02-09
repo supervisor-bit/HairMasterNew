@@ -142,10 +142,6 @@ export default function VisitNewPageImproved() {
         ...m,
         oxidanty: (m.oxidant_ids || []).map((oxId: string) => oxidantsMap.get(oxId)).filter(Boolean)
       }));
-      console.log('Loaded materials with ratios:', activeMats.map(m => ({ 
-        nazev: m.nazev, 
-        michaci_pomery: m.michaci_pomery 
-      })));
       setMaterials(activeMats);
       
       const activeUkony = (uks as Ukon[]).filter(u => u.aktivni);
@@ -1194,12 +1190,10 @@ function MaterialRow({
           <button
             key={m.id}
             onClick={() => {
-              console.log('Material clicked:', m.nazev, 'default ratio:', m.michaci_pomer_material, ':', m.michaci_pomer_oxidant, 'additional ratios:', m.michaci_pomery);
               const update: Partial<MaterialVMisceForm> = { material_id: m.id };
               // Always use the default ratio first
               update.material_michaci_pomer_material = m.michaci_pomer_material || 1;
               update.material_michaci_pomer_oxidant = m.michaci_pomer_oxidant || 1;
-              console.log('Using default ratio:', update.material_michaci_pomer_material, ':', update.material_michaci_pomer_oxidant);
               onChange(update);
               setTimeout(() => odstinRef.current?.focus(), 50);
             }}

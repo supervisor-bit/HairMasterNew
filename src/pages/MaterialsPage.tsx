@@ -330,9 +330,16 @@ export default function MaterialsPage() {
                     <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 dark:text-gray-500">
                       {mat.typ_zadavani === 'odstin' ? 'Odstín' : 'Číslo'}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
-                      Poměr {mat.michaci_pomer_material}:{mat.michaci_pomer_oxidant}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium">
+                        {mat.michaci_pomer_material}:{mat.michaci_pomer_oxidant}
+                      </span>
+                      {mat.michaci_pomery && mat.michaci_pomery.length > 0 && mat.michaci_pomery.map((pomer, idx) => (
+                        <span key={idx} className="text-xs px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium">
+                          {pomer.material}:{pomer.oxidant}
+                        </span>
+                      ))}
+                    </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
                       mat.aktivni ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                     }`}>
