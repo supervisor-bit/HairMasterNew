@@ -10,7 +10,7 @@ import Avatar from '@/components/Avatar';
 import Badge from '@/components/Badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const APP_VERSION = '2.0.6';
+const APP_VERSION = '2.0.7';
 
 interface MonthData {
   month: string;
