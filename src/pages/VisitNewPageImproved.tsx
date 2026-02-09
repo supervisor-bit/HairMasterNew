@@ -572,8 +572,8 @@ export default function VisitNewPageImproved() {
         {isCopy ? 'Nová návštěva (kopie receptury)' : 'Nová návštěva'}
       </h1>
 
-      {/* Keyboard shortcuts panel */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-700 rounded-lg px-4 py-2 mb-6 shadow-sm">
+      {/* Keyboard shortcuts panel - sticky */}
+      <div className="sticky top-16 z-10 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-700 rounded-lg px-4 py-2 mb-6 shadow-sm backdrop-blur-sm bg-white/95 dark:bg-gray-900/95">
         <div className="flex items-center gap-6 text-xs text-gray-600 dark:text-gray-400 flex-wrap">
           <div className="flex items-center gap-1.5">
             <kbd className="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">Ctrl+S</kbd>
