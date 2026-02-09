@@ -93,9 +93,9 @@ export default function VisitNewPageImproved() {
     setTimeout(() => {
       const element = refMap.current.get(tempId);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
-    }, 300);
+    }, 100);
   };
 
   const selectedClient = clients.find(c => c.id === form.klient_id);
@@ -115,11 +115,34 @@ export default function VisitNewPageImproved() {
       // Esc to go back to editing from summary
       if (e.key === 'Escape' && showSummary) {
         setShowSummary(false);
+        return;
+      }
+      
+      // Ignore shortcuts when typing in input/textarea
+      if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') {
+        return;
+      }
+      
+      // Ctrl+S to save
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (!showSummary) {
+          setShowSummary(true);
+        }
+      }
+      
+      // Ctrl+N for new service
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        const newSluzba = empty.sluzba();
+        setForm(f => ({ ...f, sluzby: [...f.sluzby, newSluzba] }));
+        scrollToElement(newSluzba.tempId, sluzbyRefs);
+        toast.success('Nová služba přidána (Ctrl+N)');
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showSummary]);
+  }, [showSummary, empty, scrollToElement]);
 
   const loadBase = useCallback(async () => {
     if (!user) return;
@@ -881,6 +904,17 @@ export default function VisitNewPageImproved() {
                                   })
                               : undefined
                           }
+                          onAddNext={
+                            matIdx === miska.materialy.length - 1
+                              ? () => {
+                                  const newMat = empty.material();
+                                  updateMiska(sIdx, mIdx, {
+                                    materialy: [...miska.materialy, newMat],
+                                  });
+                                  scrollToElement(newMat.tempId, materialyRefs);
+                                }
+                              : undefined
+                          }
                         />
                       </div>
                     ))}
@@ -1173,12 +1207,14 @@ function MaterialRow({
   materialMap,
   onChange,
   onRemove,
+  onAddNext,
 }: {
   mat: MaterialVMisceForm;
   materials: Material[];
   materialMap: Map<string, Material>;
   onChange: (update: Partial<MaterialVMisceForm>) => void;
   onRemove?: () => void;
+  onAddNext?: () => void;
 }) {
   const selectedMaterial = mat.material_id ? materialMap.get(mat.material_id) : null;
   const odstinRef = useRef<HTMLInputElement>(null);
@@ -1335,6 +1371,12 @@ function MaterialRow({
               placeholder="g"
               value={mat.gramy_materialu}
               onChange={e => onChange({ gramy_materialu: e.target.value })}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && onAddNext) {
+                  e.preventDefault();
+                  onAddNext();
+                }
+              }}
               className="w-20 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-right focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-900 dark:text-gray-100"
             />
             <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 font-medium">g</span>
