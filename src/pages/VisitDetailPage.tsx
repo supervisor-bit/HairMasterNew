@@ -582,11 +582,11 @@ export default function VisitDetailPage() {
                   </div>
                   
                   {miska.oxidant_id && (
-                    <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="text-amber-800 font-medium">🧪 Oxidant:</span>
+                        <span className="text-amber-800 dark:text-amber-300 font-medium">🧪 Oxidant:</span>
                         <Badge variant="oxidant">{miska.oxidant_nazev || 'Neznámý'}</Badge>
-                        <span className="text-amber-900 font-semibold">
+                        <span className="text-amber-900 dark:text-amber-200 font-semibold">
                           {miska.gramy_oxidantu}g
                         </span>
                         <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">(auto)</span>
