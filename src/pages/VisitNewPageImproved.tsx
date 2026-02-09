@@ -789,6 +789,8 @@ export default function VisitNewPageImproved() {
                               material_id: mat.material_id,
                               odstin_cislo: mat.odstin_cislo,
                               gramy_materialu: mat.gramy_materialu,
+                              material_michaci_pomer_material: mat.material_michaci_pomer_material,
+                              material_michaci_pomer_oxidant: mat.material_michaci_pomer_oxidant,
                             })),
                           };
                           updateSluzba(sIdx, { ...sluzba, misky: [...sluzba.misky, copiedMiska] } as any);
