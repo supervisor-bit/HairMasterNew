@@ -83,6 +83,7 @@ export default function MaterialsPage() {
         typ_zadavani: mat.typ_zadavani,
         michaci_pomer_material: mat.michaci_pomer_material,
         michaci_pomer_oxidant: mat.michaci_pomer_oxidant,
+        michaci_pomery: mat.michaci_pomery || [],
         aktivni: !mat.aktivni,
         oxidant_ids: mat.oxidanty?.map(o => o.id) || [],
       });

@@ -142,6 +142,10 @@ export default function VisitNewPageImproved() {
         ...m,
         oxidanty: (m.oxidant_ids || []).map((oxId: string) => oxidantsMap.get(oxId)).filter(Boolean)
       }));
+      console.log('Loaded materials with ratios:', activeMats.map(m => ({ 
+        nazev: m.nazev, 
+        michaci_pomery: m.michaci_pomery 
+      })));
       setMaterials(activeMats);
       
       const activeUkony = (uks as Ukon[]).filter(u => u.aktivni);
