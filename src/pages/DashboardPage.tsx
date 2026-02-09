@@ -8,8 +8,14 @@ import Button from '@/components/Button';
 import Card from '@/components/Card';
 import Avatar from '@/components/Avatar';
 import Badge from '@/components/Badge';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const APP_VERSION = '2.0.6';
+
+interface MonthData {
+  month: string;
+  navstevy: number;
+}
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -18,6 +24,7 @@ export default function DashboardPage() {
   const [recentClients, setRecentClients] = useState<Klient[]>([]);
   const [recentSales, setRecentSales] = useState<Prodej[]>([]);
   const [stats, setStats] = useState({ totalClients: 0, totalVisits: 0, thisMonth: 0 });
+  const [chartData, setChartData] = useState<MonthData[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -60,6 +67,26 @@ export default function DashboardPage() {
         totalVisits: allVisits.length,
         thisMonth,
       });
+
+      // Chart data - last 6 months
+      const monthsData: MonthData[] = [];
+      const now = new Date();
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+        const monthName = date.toLocaleDateString('cs-CZ', { month: 'short' });
+        
+        const visitsCount = (allVisits as Navsteva[]).filter(v => {
+          const vDate = new Date(v.datum);
+          return vDate.getFullYear() === date.getFullYear() && vDate.getMonth() === date.getMonth();
+        }).length;
+        
+        monthsData.push({
+          month: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+          navstevy: visitsCount,
+        });
+      }
+      setChartData(monthsData);
     } finally {
       setLoading(false);
     }
@@ -148,6 +175,43 @@ export default function DashboardPage() {
           </div>
         </Card>
       </div>
+
+      {/* Chart */}
+      <Card padding="lg" className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Návštěvy za posledních 6 měsíců</h2>
+        <ResponsiveContainer width="100%" height={200}>
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+            <XAxis 
+              dataKey="month" 
+              className="text-xs text-gray-600 dark:text-gray-400"
+              stroke="currentColor"
+            />
+            <YAxis 
+              className="text-xs text-gray-600 dark:text-gray-400"
+              stroke="currentColor"
+            />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: 'rgb(31 41 55)', 
+                border: 'none', 
+                borderRadius: '0.5rem',
+                color: 'white'
+              }}
+              labelStyle={{ color: 'white' }}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="navstevy" 
+              stroke="#8b5cf6" 
+              strokeWidth={2}
+              dot={{ fill: '#8b5cf6', r: 4 }}
+              activeDot={{ r: 6 }}
+              name="Návštěvy"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent visits */}
