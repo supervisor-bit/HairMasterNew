@@ -833,18 +833,79 @@ export default function VisitNewPageImproved() {
                   className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all dark:bg-gray-900 dark:text-gray-100"
                 />
               </div>
-              {form.sluzby.length > 1 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setForm(f => ({ ...f, sluzby: f.sluzby.filter((_, i) => i !== sIdx) }))}
-                  title="Smazat službu"
+              <div className="flex items-center gap-2">
+                {/* Toggle bez materiálu */}
+                <button
+                  onClick={() => {
+                    if (sluzba.misky.length === 0) {
+                      // Přidat prázdnou misku
+                      updateSluzba(sIdx, { misky: [empty.miska()] });
+                    } else {
+                      // Odstranit všechny misky
+                      updateSluzba(sIdx, { misky: [] });
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
+                    sluzba.misky.length === 0
+                      ? 'bg-gray-600 dark:bg-gray-700 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                  title={sluzba.misky.length === 0 ? 'Přidat materiál' : 'Bez materiálu'}
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                  💇
+                  <span>{sluzba.misky.length === 0 ? 'Bez materiálu' : 'S materiálem'}</span>
+                </button>
+                
+                {/* Duplikovat službu */}
+                <button
+                  onClick={() => {
+                    const copiedSluzba: SluzbaForm = {
+                      tempId: uid(),
+                      nazev: sluzba.nazev,
+                      misky: sluzba.misky.map(m => ({
+                        tempId: uid(),
+                        oxidant_id: m.oxidant_id,
+                        gramy_oxidantu: m.gramy_oxidantu,
+                        materialy: m.materialy.map(mat => ({
+                          tempId: uid(),
+                          material_id: mat.material_id,
+                          odstin_cislo: mat.odstin_cislo,
+                          gramy_materialu: mat.gramy_materialu,
+                          material_michaci_pomer_material: mat.material_michaci_pomer_material,
+                          material_michaci_pomer_oxidant: mat.material_michaci_pomer_oxidant,
+                        })),
+                      })),
+                    };
+                    setForm(f => ({
+                      ...f,
+                      sluzby: [...f.sluzby.slice(0, sIdx + 1), copiedSluzba, ...f.sluzby.slice(sIdx + 1)]
+                    }));
+                    scrollToElement(copiedSluzba.tempId, sluzbyRefs);
+                    toast.success('Služba zkopírována');
+                  }}
+                  className="px-2.5 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded-md transition-colors flex items-center gap-1"
+                  title="Duplikovat službu"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
-                </Button>
-              )}
+                  Duplikovat
+                </button>
+
+                {/* Smazat službu */}
+                {form.sluzby.length > 1 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setForm(f => ({ ...f, sluzby: f.sluzby.filter((_, i) => i !== sIdx) }))}
+                    title="Smazat službu"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    </svg>
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Bowls */}
