@@ -399,6 +399,7 @@ export default function VisitNewPageImproved() {
             const oxidant = oxidantsMap.get(m.oxidant_id!);
             return {
               oxidant_id: m.oxidant_id,
+              oxidant_nazev: oxidant?.nazev || '',
               gramy_oxidantu: m.gramy_oxidantu,
               materialy: m.materialy.map(mat => {
                 const material = materialMap.get(mat.material_id!);

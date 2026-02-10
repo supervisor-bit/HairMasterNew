@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/lib/auth';
-import { getVisits } from '@/lib/firestore';
+import { getVisitsWithDetails } from '@/lib/firestore';
 import type { Navsteva, Sluzba, Miska, MaterialVMisce } from '@/lib/types';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Card from '@/components/Card';
@@ -45,7 +45,7 @@ export default function StatisticsPage() {
     if (!user) return;
     
     try {
-      const visits = await getVisits(user.uid) as Navsteva[];
+      const visits = await getVisitsWithDetails(user.uid) as Navsteva[];
       
       // Maps for aggregation
       const materialMap = new Map<string, { count: number; totalGrams: number }>();

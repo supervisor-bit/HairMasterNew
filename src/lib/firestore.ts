@@ -122,6 +122,47 @@ export async function getVisits(userId: string, searchTerm?: string, clientId?: 
   return visits;
 }
 
+export async function getVisitsWithDetails(userId: string) {
+  const ref = userCollection(userId, 'visits');
+  const q = query(ref, orderBy('datum', 'desc'));
+  const snapshot = await getDocs(q);
+  
+  const visits = [];
+  
+  for (const visitDoc of snapshot.docs) {
+    const visitData = { id: visitDoc.id, ...visitDoc.data() };
+    const visitId = visitDoc.id;
+    
+    // Get nested services
+    const sluzbySnap = await getDocs(collection(db, `users/${userId}/visits/${visitId}/sluzby`));
+    const sluzby = [];
+    
+    for (const sluzbaDoc of sluzbySnap.docs) {
+      const sluzbaData = { id: sluzbaDoc.id, ...sluzbaDoc.data() };
+      
+      // Get misky for this sluzba
+      const miskySnap = await getDocs(collection(db, `users/${userId}/visits/${visitId}/sluzby/${sluzbaDoc.id}/misky`));
+      const misky = [];
+      
+      for (const miskaDoc of miskySnap.docs) {
+        const miskaData = { id: miskaDoc.id, ...miskaDoc.data() };
+        
+        // Get materialy for this miska
+        const materialySnap = await getDocs(collection(db, `users/${userId}/visits/${visitId}/sluzby/${sluzbaDoc.id}/misky/${miskaDoc.id}/materialy`));
+        const materialy = materialySnap.docs.map(matDoc => ({ id: matDoc.id, ...matDoc.data() }));
+        
+        misky.push({ ...miskaData, materialy });
+      }
+      
+      sluzby.push({ ...sluzbaData, misky });
+    }
+    
+    visits.push({ ...visitData, sluzby });
+  }
+  
+  return visits;
+}
+
 export async function getVisit(userId: string, visitId: string) {
   const docRef = doc(db, `users/${userId}/visits/${visitId}`);
   const docSnap = await getDoc(docRef);
