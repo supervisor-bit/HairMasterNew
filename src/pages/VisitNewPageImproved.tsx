@@ -1453,30 +1453,26 @@ function MaterialRow({
   onAddNext?: () => void;
 }) {
   const selectedMaterial = mat.material_id ? materialMap.get(mat.material_id) : null;
-  const odstinRef = useRef<HTMLInputElement>(null);
   const gramyRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const materialInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredMaterials = materials.filter(m => {
-    const search = searchTerm.toLowerCase();
-    return m.nazev.toLowerCase().includes(search) || 
-           (m.vychozi_odstin && m.vychozi_odstin.toLowerCase().includes(search));
-  });
+  const filteredMaterials = materials.filter(m => 
+    m.nazev.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const selectMaterial = (m: Material) => {
     onChange({
       material_id: m.id,
       material_michaci_pomer_material: m.michaci_pomer_material || 1,
-      material_michaci_pomer_oxidant: m.michaci_pomer_oxidant || 1,
-      odstin_cislo: m.vychozi_odstin || ''
+      material_michaci_pomer_oxidant: m.michaci_pomer_oxidant || 1
     });
     setSearchTerm('');
     setShowDropdown(false);
     setActiveIndex(0);
-    setTimeout(() => odstinRef.current?.focus(), 50);
+    setTimeout(() => gramyRef.current?.focus(), 50);
   };
 
   return (
@@ -1530,20 +1526,13 @@ function MaterialRow({
                 type="button"
                 onClick={() => selectMaterial(m)}
                 onMouseEnter={() => setActiveIndex(idx)}
-                className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                className={`w-full px-3 py-2 text-left text-sm text-gray-900 dark:text-gray-100 transition-colors ${
                   idx === activeIndex 
                     ? 'bg-purple-100 dark:bg-purple-900/30' 
                     : 'hover:bg-purple-50 dark:hover:bg-purple-900/20'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-900 dark:text-gray-100">{m.nazev}</span>
-                  {m.vychozi_odstin && (
-                    <span className="text-xs text-purple-600 dark:text-purple-400 font-medium ml-2">
-                      → {m.vychozi_odstin}
-                    </span>
-                  )}
-                </div>
+                {m.nazev}
               </button>
             ))}
           </div>
@@ -1597,46 +1586,6 @@ function MaterialRow({
               </div>
             </div>
           ) : null}
-          
-          {/* Quick shade selection buttons */}
-          <div className="mb-2">
-            <div className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">
-              {selectedMaterial.typ_zadavani === 'odstin' ? 'Odstín:' : 'Číslo:'}
-            </div>
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {['4.0', '5.0', '6.0', '6.1', '7.0', '7.1', '8.0', '8.1', '9.0', '9.1', '10.0'].map(shade => (
-                <button
-                  key={shade}
-                  type="button"
-                  onClick={() => {
-                    onChange({ odstin_cislo: shade });
-                    setTimeout(() => gramyRef.current?.focus(), 50);
-                  }}
-                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                    mat.odstin_cislo === shade
-                      ? 'bg-purple-600 dark:bg-purple-700 text-white shadow-sm'
-                      : 'bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-600 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:border-purple-300 dark:hover:border-purple-500'
-                  }`}
-                >
-                  {shade}
-                </button>
-              ))}
-            </div>
-            {/* Custom input for other shades */}
-            <input
-              ref={odstinRef}
-              placeholder="nebo vlastní..."
-              value={mat.odstin_cislo}
-              onChange={e => onChange({ odstin_cislo: e.target.value })}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  gramyRef.current?.focus();
-                }
-              }}
-              className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-900 dark:text-gray-100"
-            />
-          </div>
           
           <div className="flex items-center gap-2">
             {/* Grams input with quick buttons */}
