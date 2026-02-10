@@ -200,6 +200,7 @@ export default function VisitNewPageImproved() {
             datum: new Date().toISOString().slice(0, 10),
             celkova_castka: '',
             poznamka: '',
+            platebni_metoda: 'hotovost',
             sluzby: visit.sluzby.map(s => ({
               tempId: uid(),
               nazev: s.nazev,
@@ -212,15 +213,12 @@ export default function VisitNewPageImproved() {
                   material_id: mat.material_id,
                   odstin_cislo: mat.odstin_cislo || '',
                   gramy_materialu: mat.gramy_materialu,
+                  material_michaci_pomer_material: mat.material_michaci_pomer_material,
+                  material_michaci_pomer_oxidant: mat.material_michaci_pomer_oxidant,
                 })),
               })),
             })),
-            produkty: (visit.produkty || []).map(p => ({
-              tempId: uid(),
-              produkt_id: p.produkt_id,
-              pocet_ks: p.pocet_ks,
-              cena_za_ks: p.cena_za_ks,
-            })),
+            produkty: [], // Produkty se nekopírují - jen receptura
           });
         } catch {
           toast.error('Nepodařilo se načíst recepturu ke kopírování');
