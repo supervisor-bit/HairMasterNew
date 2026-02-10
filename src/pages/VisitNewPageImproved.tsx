@@ -1460,9 +1460,11 @@ function MaterialRow({
   const [activeIndex, setActiveIndex] = useState(0);
   const materialInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredMaterials = materials.filter(m => 
-    m.nazev.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredMaterials = materials.filter(m => {
+    const search = searchTerm.toLowerCase();
+    return m.nazev.toLowerCase().includes(search) || 
+           (m.vychozi_odstin && m.vychozi_odstin.toLowerCase().includes(search));
+  });
 
   const selectMaterial = (m: Material) => {
     onChange({
@@ -1528,13 +1530,20 @@ function MaterialRow({
                 type="button"
                 onClick={() => selectMaterial(m)}
                 onMouseEnter={() => setActiveIndex(idx)}
-                className={`w-full px-3 py-2 text-left text-sm text-gray-900 dark:text-gray-100 transition-colors ${
+                className={`w-full px-3 py-2 text-left text-sm transition-colors ${
                   idx === activeIndex 
                     ? 'bg-purple-100 dark:bg-purple-900/30' 
                     : 'hover:bg-purple-50 dark:hover:bg-purple-900/20'
                 }`}
               >
-                {m.nazev}
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-900 dark:text-gray-100">{m.nazev}</span>
+                  {m.vychozi_odstin && (
+                    <span className="text-xs text-purple-600 dark:text-purple-400 font-medium ml-2">
+                      → {m.vychozi_odstin}
+                    </span>
+                  )}
+                </div>
               </button>
             ))}
           </div>
