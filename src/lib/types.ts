@@ -75,6 +75,7 @@ export interface Material {
   id: string;
   nazev: string;
   typ_zadavani: 'odstin' | 'cislo';
+  vychozi_odstin?: string;             // předvyplněný odstín (např. "7.0", "8.1")
   michaci_pomer_material: number;      // výchozí poměr
   michaci_pomer_oxidant: number;       // výchozí poměr
   michaci_pomery?: MichaciPomer[];     // volitelné: více možných poměrů

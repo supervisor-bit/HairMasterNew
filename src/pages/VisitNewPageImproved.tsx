@@ -1468,7 +1468,8 @@ function MaterialRow({
     onChange({
       material_id: m.id,
       material_michaci_pomer_material: m.michaci_pomer_material || 1,
-      material_michaci_pomer_oxidant: m.michaci_pomer_oxidant || 1
+      material_michaci_pomer_oxidant: m.michaci_pomer_oxidant || 1,
+      odstin_cislo: m.vychozi_odstin || ''
     });
     setSearchTerm('');
     setShowDropdown(false);
@@ -1588,11 +1589,34 @@ function MaterialRow({
             </div>
           ) : null}
           
-          <div className="flex items-center gap-2">
-            {/* Shade/number input */}
+          {/* Quick shade selection buttons */}
+          <div className="mb-2">
+            <div className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">
+              {selectedMaterial.typ_zadavani === 'odstin' ? 'Odstín:' : 'Číslo:'}
+            </div>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {['4.0', '5.0', '6.0', '6.1', '7.0', '7.1', '8.0', '8.1', '9.0', '9.1', '10.0'].map(shade => (
+                <button
+                  key={shade}
+                  type="button"
+                  onClick={() => {
+                    onChange({ odstin_cislo: shade });
+                    setTimeout(() => gramyRef.current?.focus(), 50);
+                  }}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                    mat.odstin_cislo === shade
+                      ? 'bg-purple-600 dark:bg-purple-700 text-white shadow-sm'
+                      : 'bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-600 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:border-purple-300 dark:hover:border-purple-500'
+                  }`}
+                >
+                  {shade}
+                </button>
+              ))}
+            </div>
+            {/* Custom input for other shades */}
             <input
               ref={odstinRef}
-              placeholder={selectedMaterial.typ_zadavani === 'odstin' ? 'Odstín' : 'Číslo'}
+              placeholder="nebo vlastní..."
               value={mat.odstin_cislo}
               onChange={e => onChange({ odstin_cislo: e.target.value })}
               onKeyDown={e => {
@@ -1601,32 +1625,54 @@ function MaterialRow({
                   gramyRef.current?.focus();
                 }
               }}
-              className="w-24 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-900 dark:text-gray-100"
             />
-            
-            {/* Grams input */}
-            <input
-              ref={gramyRef}
-              type="number"
-              min={1}
-              placeholder="g"
-              value={mat.gramy_materialu}
-              onChange={e => onChange({ gramy_materialu: e.target.value })}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && onAddNext) {
-                  e.preventDefault();
-                  onAddNext();
-                }
-              }}
-              className="w-20 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-right focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-900 dark:text-gray-100"
-            />
-            <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 font-medium">g</span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Grams input with quick buttons */}
+            <div className="flex-1">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Gramáž:</div>
+              <div className="flex gap-1.5 mb-1.5">
+                {[20, 30, 40, 50].map(grams => (
+                  <button
+                    key={grams}
+                    type="button"
+                    onClick={() => {
+                      onChange({ gramy_materialu: String(grams) });
+                    }}
+                    className={`flex-1 px-2 py-1 rounded-md text-xs font-medium transition-all ${
+                      mat.gramy_materialu === String(grams)
+                        ? 'bg-emerald-600 dark:bg-emerald-700 text-white shadow-sm'
+                        : 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
+                    }`}
+                  >
+                    {grams}g
+                  </button>
+                ))}
+              </div>
+              <input
+                ref={gramyRef}
+                type="number"
+                min={1}
+                placeholder="vlastní g"
+                value={mat.gramy_materialu}
+                onChange={e => onChange({ gramy_materialu: e.target.value })}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && onAddNext) {
+                    e.preventDefault();
+                    onAddNext();
+                  }
+                }}
+                className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-right focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-900 dark:text-gray-100"
+              />
+            </div>
             
             {/* Remove button */}
             {onRemove && (
               <button
                 onClick={onRemove}
-                className="ml-auto p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors opacity-0 group-hover:opacity-100"
+                className="ml-2 p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors opacity-0 group-hover:opacity-100"
                 title="Smazat"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

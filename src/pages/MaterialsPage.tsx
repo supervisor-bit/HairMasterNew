@@ -8,6 +8,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 interface MaterialForm {
   nazev: string;
   typ_zadavani: 'odstin' | 'cislo';
+  vychozi_odstin: string;
   michaci_pomer_material: number;
   michaci_pomer_oxidant: number;
   michaci_pomery: MichaciPomer[];
@@ -17,6 +18,7 @@ interface MaterialForm {
 const emptyForm: MaterialForm = {
   nazev: '',
   typ_zadavani: 'odstin',
+  vychozi_odstin: '',
   michaci_pomer_material: 1,
   michaci_pomer_oxidant: 1,
   michaci_pomery: [],
@@ -81,6 +83,7 @@ export default function MaterialsPage() {
       await updateMaterial(user.uid, mat.id, {
         nazev: mat.nazev,
         typ_zadavani: mat.typ_zadavani,
+        vychozi_odstin: mat.vychozi_odstin,
         michaci_pomer_material: mat.michaci_pomer_material,
         michaci_pomer_oxidant: mat.michaci_pomer_oxidant,
         michaci_pomery: mat.michaci_pomery || [],
@@ -155,6 +158,18 @@ export default function MaterialsPage() {
             </label>
           ))}
         </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Výchozí odstín/číslo <span className="text-gray-500 dark:text-gray-400 font-normal">(volitelné)</span>
+        </label>
+        <input
+          value={form.vychozi_odstin}
+          onChange={e => setForm(f => ({ ...f, vychozi_odstin: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+          placeholder="Např. 7.0, 8.1, 9/1"
+        />
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Automaticky se předvyplní při přidání do misky</p>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Míchací poměr (materiál : oxidant)</label>
@@ -330,6 +345,11 @@ export default function MaterialsPage() {
                     <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 dark:text-gray-500">
                       {mat.typ_zadavani === 'odstin' ? 'Odstín' : 'Číslo'}
                     </span>
+                    {mat.vychozi_odstin && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium">
+                        → {mat.vychozi_odstin}
+                      </span>
+                    )}
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium">
                         {mat.michaci_pomer_material}:{mat.michaci_pomer_oxidant}
@@ -362,6 +382,7 @@ export default function MaterialsPage() {
                     setForm({
                       nazev: mat.nazev,
                       typ_zadavani: mat.typ_zadavani,
+                      vychozi_odstin: mat.vychozi_odstin || '',
                       michaci_pomer_material: mat.michaci_pomer_material,
                       michaci_pomer_oxidant: mat.michaci_pomer_oxidant,
                       michaci_pomery: mat.michaci_pomery || [],
